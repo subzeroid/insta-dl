@@ -2,7 +2,7 @@
 
 All notable changes to insta-dl. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning follows [SemVer](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.0.1] — 2026-04-24
 
 ### Added
 
@@ -28,4 +28,4 @@ All notable changes to insta-dl. Format follows [Keep a Changelog](https://keepa
 - No support for `:feed`, `:saved`, or DMs (account-bound, blocked on aiograpi).
 - Comments sidecar is a single JSON array — fine for posts with thousands of comments, may want JSONL for hundreds of thousands.
 
-[Unreleased]: https://github.com/subzeroid/insta-dl/commits/main
+[0.0.1]: https://github.com/subzeroid/insta-dl/releases/tag/v0.0.1

@@ -5,12 +5,52 @@ build-backend = "hatchling.build"
 [project]
 name = "insta-dl"
 version = "0.0.1"
-description = "Instagram downloader with pluggable backends (hikerapi, aiograpi)"
+description = "Async Instagram downloader CLI — profiles, posts, reels, stories, highlights, hashtags, comments. Pluggable backends (HikerAPI / aiograpi)."
+readme = "README.md"
+license = { file = "LICENSE" }
 requires-python = ">=3.11"
+authors = [{ name = "subzeroid" }]
+keywords = [
+    "instagram",
+    "instagram-downloader",
+    "instagram-scraper",
+    "downloader",
+    "hikerapi",
+    "aiograpi",
+    "async",
+    "cli",
+    "osint",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Internet",
+    "Topic :: Multimedia :: Graphics",
+    "Topic :: Multimedia :: Video",
+    "Topic :: Utilities",
+    "Typing :: Typed",
+]
 dependencies = [
     "hikerapi",
     "aiograpi",
 ]
+
+[project.urls]
+Homepage = "https://subzeroid.github.io/insta-dl/"
+Documentation = "https://subzeroid.github.io/insta-dl/"
+Repository = "https://github.com/subzeroid/insta-dl"
+Issues = "https://github.com/subzeroid/insta-dl/issues"
+Changelog = "https://github.com/subzeroid/insta-dl/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 dev = [
