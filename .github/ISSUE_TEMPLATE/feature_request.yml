@@ -1,0 +1,23 @@
+name: Feature request
+description: A new capability, flag, or integration
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to do?
+      description: Describe the goal, not the solution. "I want to archive my following feed weekly" is more useful than "add a --feed flag".
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution (optional)
+      description: If you have a specific shape in mind — CLI flag, API, config — sketch it here.
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered (optional)
+      description: Other tools, workarounds, or rejected ideas.

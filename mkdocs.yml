@@ -38,6 +38,7 @@ nav:
   - Basic usage: basic-usage.md
   - CLI reference: cli-reference.md
   - Backends: backends.md
+  - Compared to alternatives: comparison.md
   - Python API: python-api.md
   - Troubleshooting: troubleshooting.md
   - Architecture: architecture.md

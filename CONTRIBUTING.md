@@ -8,10 +8,11 @@ Thanks for considering a contribution. This document covers the dev workflow.
 git clone git@github.com:subzeroid/insta-dl.git
 cd insta-dl
 python -m venv .venv && source .venv/bin/activate
-pip install -e '.[dev]'
+pip install -e '.[dev,lint]'
+pip install pre-commit && pre-commit install
 ```
 
-Python 3.11+ required (we use `dataclass(slots=True)`, `X | Y` unions, `datetime.fromisoformat` with `Z`).
+Python 3.11+ required (we use `dataclass(slots=True)`, `X | Y` unions, `datetime.fromisoformat` with `Z`). The `pre-commit install` step wires up `ruff` (format + lint) and `mypy` to run on every commit — same checks CI runs.
 
 ## Running tests
 
@@ -91,4 +92,4 @@ Then open <http://localhost:8000>. The site auto-deploys to GitHub Pages on push
 
 ## Security
 
-If you find a vulnerability (path traversal, SSRF bypass, signed-token leak, etc.), please open a private security advisory on GitHub rather than a public issue.
+If you find a vulnerability (path traversal, SSRF bypass, signed-token leak, etc.), please open a private security advisory on GitHub rather than a public issue. See [SECURITY.md](https://github.com/subzeroid/insta-dl/blob/main/SECURITY.md) for scope and response timelines.

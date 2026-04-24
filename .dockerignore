@@ -10,8 +10,12 @@ _site/
 .ruff_cache/
 .coverage
 htmlcov/
-.DS_Store
+.git/
+.github/
 .claude/
 .context/
+tests/
+docs/
 CLAUDE.md
-coverage.xml
+*.md
+!README.md

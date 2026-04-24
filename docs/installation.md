@@ -13,6 +13,27 @@ pip install instagram-dl
 
 The PyPI distribution is called **`instagram-dl`** (because `insta-dl` is blocked by a similarly-named abandoned package). The installed CLI command is still `insta-dl`, and the Python import path is still `insta_dl`.
 
+### With pipx (recommended for CLI-only use)
+
+If you only want the `insta-dl` command and don't plan to import the library, install it in an isolated environment with [pipx](https://pipx.pypa.io/):
+
+```bash
+pipx install instagram-dl
+```
+
+### With Docker
+
+A multi-arch image is published to GitHub Container Registry on every tagged release:
+
+```bash
+docker run --rm \
+    -v "$PWD/out:/data" \
+    -e HIKERAPI_TOKEN \
+    ghcr.io/subzeroid/insta-dl:latest instagram
+```
+
+The container writes to `/data`, which we mount to `./out` on the host. Pin to a specific version with `ghcr.io/subzeroid/insta-dl:0.0.1` if you don't want `latest` to float.
+
 ## Install from source
 
 ```bash

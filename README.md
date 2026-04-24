@@ -1,18 +1,27 @@
 # insta-dl
 
-[![Python](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
+[![PyPI](https://img.shields.io/pypi/v/instagram-dl.svg)](https://pypi.org/project/instagram-dl/)
+[![Python](https://img.shields.io/pypi/pyversions/instagram-dl.svg)](https://pypi.org/project/instagram-dl/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Status: alpha](https://img.shields.io/badge/status-alpha-orange.svg)]()
-[![Tests](https://img.shields.io/badge/tests-198%20passing-success.svg)]()
-[![Coverage](https://img.shields.io/badge/coverage-95%25-success.svg)]()
+[![Tests](https://github.com/subzeroid/insta-dl/actions/workflows/tests.yml/badge.svg)](https://github.com/subzeroid/insta-dl/actions/workflows/tests.yml)
+[![codecov](https://codecov.io/gh/subzeroid/insta-dl/branch/main/graph/badge.svg)](https://codecov.io/gh/subzeroid/insta-dl)
+[![Docs](https://img.shields.io/badge/docs-subzeroid.github.io-blue)](https://subzeroid.github.io/insta-dl/)
 
 Async command-line downloader for Instagram. Profiles, posts, reels, stories, highlights, hashtags, and comments — saved to disk with the original timestamps preserved.
 
 ```bash
-pip install instagram-dl   # installs the `insta-dl` command
+pip install instagram-dl           # pip
+pipx install instagram-dl          # or as an isolated CLI app
 
 export HIKERAPI_TOKEN=your_token
 insta-dl instagram
+```
+
+Or run it without installing Python at all:
+
+```bash
+docker run --rm -v "$PWD/out:/data" -e HIKERAPI_TOKEN \
+    ghcr.io/subzeroid/insta-dl:latest instagram
 ```
 
 Grab a free HikerAPI token at [hikerapi.com](https://hikerapi.com/p/18j4ib4j) — **first 100 requests are free**, no credit card. One request ≈ one post or one page of a feed.
@@ -103,7 +112,7 @@ insta-dl --backend hiker --hiker-token TOKEN instagram
 insta-dl --backend aiograpi --login USER --password PASS --session ./session.json instagram
 ```
 
-Detailed comparison and auth setup: see the [backends documentation](https://subzeroid.github.io/insta-dl/backends/).
+Detailed comparison and auth setup: see the [backends documentation](https://subzeroid.github.io/insta-dl/backends/). For how insta-dl stacks up against instaloader, yt-dlp, and gallery-dl, see [compared to alternatives](https://subzeroid.github.io/insta-dl/comparison/).
 
 ## Output layout
 
