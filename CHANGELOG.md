@@ -2,6 +2,28 @@
 
 All notable changes to insta-dl. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning follows [SemVer](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.1](https://github.com/subzeroid/insta-dl/compare/instagram-dl-v0.1.0...instagram-dl-v0.1.1) (2026-04-24)
+
+
+### Added
+
+* --version, --post-filter, shell completions, retry/backoff, strict types ([d43bcba](https://github.com/subzeroid/insta-dl/commit/d43bcbabf6c394ce69834430425086d9d987b59e))
+* initial release (0.0.1) — async Instagram downloader CLI ([7a307c5](https://github.com/subzeroid/insta-dl/commit/7a307c505acea5bedb6a4196a8785f34209652e1))
+* progress bar for CDN downloads ([b21e412](https://github.com/subzeroid/insta-dl/commit/b21e4121562ef3be2f87e86c8c7e16469f0437a0))
+
+
+### Changed
+
+* make aiograpi an optional extra ([92ed667](https://github.com/subzeroid/insta-dl/commit/92ed66726b9ea6466d0ada0b12a5285c2dd14e7f))
+
+
+### Documentation
+
+* MkDocs Material site (8 pages) with GH Pages deploy workflow. ([7a307c5](https://github.com/subzeroid/insta-dl/commit/7a307c505acea5bedb6a4196a8785f34209652e1))
+* **readme:** add demo GIF ([568feea](https://github.com/subzeroid/insta-dl/commit/568feeaeae08bc1dea1f43f45f54e0aa0c3cfa2c))
+* **readme:** clarify that aiograpi backend is an opt-in extra ([a02f6a6](https://github.com/subzeroid/insta-dl/commit/a02f6a65ac44c00435126a23533385045865c699))
+* **readme:** link HikerAPI signup and free-tier note ([b0b2d7a](https://github.com/subzeroid/insta-dl/commit/b0b2d7a9e5dae205e8e7d111664769c8382a1200))
+
 ## [Unreleased]
 
 ### Added
