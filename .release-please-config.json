@@ -4,6 +4,8 @@
   "packages": {
     ".": {
       "package-name": "instagram-dl",
+      "component": "",
+      "include-component-in-tag": false,
       "changelog-path": "CHANGELOG.md",
       "include-v-in-tag": true,
       "bump-minor-pre-major": true,
