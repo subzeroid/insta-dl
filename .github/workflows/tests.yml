@@ -9,6 +9,12 @@ on:
 permissions:
   contents: read
 
+env:
+  # aiograpi pulls in pydantic-core / orjson (Rust + PyO3); upstream PyO3
+  # only declares 3.13 as its maximum. ABI3 forward-compat is the
+  # officially-suggested workaround until PyO3 tags a 3.14-aware release.
+  PYO3_USE_ABI3_FORWARD_COMPATIBILITY: "1"
+
 jobs:
   test:
     runs-on: ubuntu-latest
