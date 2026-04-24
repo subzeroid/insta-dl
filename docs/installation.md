@@ -7,12 +7,11 @@
 
 ## Install from PyPI
 
-!!! note "Not yet on PyPI"
-    insta-dl is in alpha and not published to PyPI yet. Use the editable install from source for now.
-
 ```bash
-pip install insta-dl
+pip install instagram-dl
 ```
+
+The PyPI distribution is called **`instagram-dl`** (because `insta-dl` is blocked by a similarly-named abandoned package). The installed CLI command is still `insta-dl`, and the Python import path is still `insta_dl`.
 
 ## Install from source
 
@@ -70,5 +69,5 @@ You should see one `.mp4` (or `.jpg`) and one `.json` sidecar with the post date
 ## Uninstall
 
 ```bash
-pip uninstall insta-dl
+pip uninstall instagram-dl
 ```
