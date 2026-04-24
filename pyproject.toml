@@ -43,6 +43,7 @@ classifiers = [
 dependencies = [
     "hikerapi",
     "aiograpi",
+    "argcomplete>=3",
 ]
 
 [project.urls]
@@ -92,34 +93,40 @@ line-length = 110
 
 [tool.ruff.lint]
 select = [
-    "E",   # pycodestyle errors
-    "F",   # pyflakes
-    "W",   # pycodestyle warnings
-    "I",   # isort
-    "UP",  # pyupgrade
-    "B",   # flake8-bugbear
-    "SIM", # flake8-simplify
-    "RUF", # ruff-specific
+    "E",    # pycodestyle errors
+    "F",    # pyflakes
+    "W",    # pycodestyle warnings
+    "I",    # isort
+    "UP",   # pyupgrade
+    "B",    # flake8-bugbear
+    "SIM",  # flake8-simplify
+    "RUF",  # ruff-specific
+    "TCH",  # flake8-type-checking
+    "PTH",  # flake8-use-pathlib
+    "ARG",  # flake8-unused-arguments
+    "RET",  # flake8-return
+    "C4",   # flake8-comprehensions
 ]
 ignore = [
-    "E501",  # line too long — handled by formatter
-    "B008",  # do not perform function call in argument defaults
+    "E501",   # line too long — handled by formatter
+    "B008",   # do not perform function call in argument defaults
     "SIM108", # ternary vs if/else — readability judgement call
+    "RET504", # unnecessary assignment before return — readability over terseness
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/*" = ["B017"]  # pytest.raises patterns
+"tests/*" = ["B017", "ARG"]  # pytest.raises patterns; unused fixture/args are common
+"insta_dl/backends/aiograpi_backend.py" = ["ARG002"]  # stub — method args documented but unused
 
 [tool.mypy]
 python_version = "3.11"
-warn_unused_configs = true
-warn_redundant_casts = true
-warn_unused_ignores = true
-check_untyped_defs = true
-no_implicit_optional = true
+strict = true
 ignore_missing_imports = true  # hikerapi / aiograpi upstream has no stubs
 
 [[tool.mypy.overrides]]
 module = "tests.*"
 disallow_untyped_defs = false
 check_untyped_defs = false
+disallow_untyped_calls = false
+disallow_incomplete_defs = false
+warn_return_any = false

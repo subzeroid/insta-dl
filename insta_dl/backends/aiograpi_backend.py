@@ -1,11 +1,15 @@
 from __future__ import annotations
 
-from collections.abc import AsyncIterator
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 from ..backend import InstagramBackend
 from ..exceptions import UnsupportedByBackendError
-from ..models import Comment, Highlight, Post, Profile, StoryItem
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncIterator
+    from pathlib import Path
+
+    from ..models import Comment, Highlight, Post, Profile, StoryItem
 
 
 class AiograpiBackend(InstagramBackend):

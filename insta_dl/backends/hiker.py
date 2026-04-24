@@ -3,14 +3,12 @@ from __future__ import annotations
 import logging
 import os
 import uuid
-from collections.abc import AsyncIterator
-from pathlib import Path
 from typing import TYPE_CHECKING, Any
 from urllib.parse import urlsplit
 
 from ..backend import InstagramBackend
 from ..exceptions import AuthError, BackendError, NotFoundError
-from ..models import Comment, Highlight, Post, Profile, StoryItem
+from ..retry import retry_call
 from ._hiker_map import (
     map_comment,
     map_highlight,
@@ -27,8 +25,13 @@ _DEFAULT_MAX_BYTES = 500 * 1024 * 1024
 log = logging.getLogger("insta_dl.backends.hiker")
 
 if TYPE_CHECKING:
+    from collections.abc import AsyncIterator
+    from pathlib import Path
+
     import httpx
     from hikerapi import AsyncClient
+
+    from ..models import Comment, Highlight, Post, Profile, StoryItem
 
 
 class HikerBackend(InstagramBackend):
@@ -60,14 +63,14 @@ class HikerBackend(InstagramBackend):
             await aclose()
 
     async def get_profile(self, username: str) -> Profile:
-        raw = await self._client.user_by_username_v2(username)
+        raw = await retry_call(lambda: self._client.user_by_username_v2(username))
         user = (raw or {}).get("user") if isinstance(raw, dict) else None
         if not user:
             raise NotFoundError(f"profile not found: {username}")
         return map_profile(user)
 
     async def get_post_by_shortcode(self, shortcode: str) -> Post:
-        raw = await self._client.media_info_by_code_v2(shortcode)
+        raw = await retry_call(lambda: self._client.media_info_by_code_v2(shortcode))
         media = None
         if isinstance(raw, dict):
             media = raw.get("media_or_ad") or raw.get("media") or raw.get("response")
@@ -79,7 +82,9 @@ class HikerBackend(InstagramBackend):
         cursor: str | None = None
         seen: set[str] = set()
         while True:
-            chunk = await self._client.user_medias_chunk_v1(user_pk, end_cursor=cursor)
+            chunk = await retry_call(
+                lambda c=cursor: self._client.user_medias_chunk_v1(user_pk, end_cursor=c)  # type: ignore[misc]
+            )
             items, next_cursor = _split_chunk(chunk)
             if not items:
                 break
@@ -94,21 +99,21 @@ class HikerBackend(InstagramBackend):
             cursor = next_cursor
 
     async def iter_user_stories(self, user_pk: str) -> AsyncIterator[StoryItem]:
-        raw = await self._client.user_stories_v2(user_pk)
+        raw = await retry_call(lambda: self._client.user_stories_v2(user_pk))
         body = _unwrap(raw)
         items = body.get("items") or body.get("reel", {}).get("items") or []
         for item in items:
             yield map_story(item)
 
     async def iter_user_highlights(self, user_pk: str) -> AsyncIterator[Highlight]:
-        raw = await self._client.user_highlights_v2(user_pk)
+        raw = await retry_call(lambda: self._client.user_highlights_v2(user_pk))
         body = _unwrap(raw)
         trays = body.get("tray") or body.get("items") or []
         for item in trays:
             yield map_highlight(item)
 
     async def iter_highlight_items(self, highlight_pk: str) -> AsyncIterator[StoryItem]:
-        raw = await self._client.highlight_by_id_v2(id=highlight_pk)
+        raw = await retry_call(lambda: self._client.highlight_by_id_v2(id=highlight_pk))
         body = _unwrap(raw)
         items = body.get("items") or []
         for item in items:
@@ -118,7 +123,9 @@ class HikerBackend(InstagramBackend):
         page: str | None = None
         seen: set[str] = set()
         while True:
-            raw = await self._client.hashtag_medias_recent_v2(tag, page_id=page)
+            raw = await retry_call(
+                lambda p=page: self._client.hashtag_medias_recent_v2(tag, page_id=p)  # type: ignore[misc]
+            )
             sections = (raw.get("response") or {}).get("sections") or []
             page = raw.get("next_page_id")
             empty = True
@@ -139,7 +146,9 @@ class HikerBackend(InstagramBackend):
     async def iter_post_comments(self, post_pk: str) -> AsyncIterator[Comment]:
         page: str | None = None
         while True:
-            raw = await self._client.media_comments_v2(post_pk, page_id=page)
+            raw = await retry_call(
+                lambda p=page: self._client.media_comments_v2(post_pk, page_id=p)  # type: ignore[misc]
+            )
             body = _unwrap(raw)
             items = body.get("comments") or []
             for item in items:
@@ -152,6 +161,9 @@ class HikerBackend(InstagramBackend):
                 break
 
     async def download_resource(self, url: str, dest: Path) -> Path:
+        return await retry_call(lambda: self._download_once(url, dest))
+
+    async def _download_once(self, url: str, dest: Path) -> Path:
         dest.parent.mkdir(parents=True, exist_ok=True)
         part = dest.with_name(f"{dest.name}.{uuid.uuid4().hex}.part")
         client = self._cdn()
@@ -188,7 +200,7 @@ class HikerBackend(InstagramBackend):
                     break
             else:
                 raise BackendError(f"too many redirects (>{_MAX_REDIRECTS}) for {_host(url)}")
-            os.replace(part, dest)
+            part.replace(dest)
         except BaseException:
             part.unlink(missing_ok=True)
             raise
@@ -218,14 +230,14 @@ def _ensure_allowed(url: str) -> None:
     _ensure_allowed_host(url)
 
 
-def _unwrap(raw: Any) -> dict:
+def _unwrap(raw: Any) -> dict[str, Any]:
     """HikerAPI v2 wraps payloads in {'response': {...}}; v1 returns flat dict."""
     if isinstance(raw, dict) and "response" in raw and isinstance(raw["response"], dict):
         return raw["response"]
     return raw if isinstance(raw, dict) else {}
 
 
-def _split_chunk(chunk: Any) -> tuple[list[dict], str | None]:
+def _split_chunk(chunk: Any) -> tuple[list[dict[str, Any]], str | None]:
     """user_medias_chunk_v1 returns [items, end_cursor]."""
     if isinstance(chunk, list) and len(chunk) == 2:
         items, cursor = chunk

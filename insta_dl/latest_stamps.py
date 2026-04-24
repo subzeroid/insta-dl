@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import configparser
-import os
 import uuid
 from datetime import UTC, datetime
-from pathlib import Path
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 class LatestStamps:
@@ -38,7 +40,7 @@ class LatestStamps:
         try:
             with tmp.open("w") as f:
                 self._cp.write(f)
-            os.replace(tmp, self.path)
+            tmp.replace(self.path)
         except BaseException:
             tmp.unlink(missing_ok=True)
             raise

@@ -4,14 +4,19 @@ import json
 import logging
 import uuid
 from dataclasses import asdict, dataclass
-from datetime import datetime
-from pathlib import Path
+from typing import TYPE_CHECKING
 from urllib.parse import urlsplit, urlunsplit
 
-from .backend import InstagramBackend
 from .filestore import apply_mtime, ext_from_url, post_filename, safe_component
-from .latest_stamps import LatestStamps
-from .models import Post
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+    from datetime import datetime
+    from pathlib import Path
+
+    from .backend import InstagramBackend
+    from .latest_stamps import LatestStamps
+    from .models import Post
 
 log = logging.getLogger("insta_dl")
 
@@ -24,7 +29,7 @@ class DownloadOptions:
     save_metadata: bool = True
     include_stories: bool = False
     include_highlights: bool = False
-    post_filter: str | None = None
+    post_filter: Callable[[Post], bool] | None = None
     latest_stamps: LatestStamps | None = None
 
 
@@ -32,8 +37,15 @@ class Downloader:
     def __init__(self, backend: InstagramBackend, options: DownloadOptions) -> None:
         self.backend = backend
         self.options = options
-        if options.post_filter:
-            log.warning("--post-filter is not yet implemented; ignoring")
+
+    def _keep(self, post: Post) -> bool:
+        if self.options.post_filter is None:
+            return True
+        try:
+            return self.options.post_filter(post)
+        except Exception as exc:
+            log.warning("post-filter raised on %s: %s — skipping", post.code, exc)
+            return False
 
     async def download_profile(self, username: str) -> None:
         profile = await self.backend.get_profile(username)
@@ -51,6 +63,8 @@ class Downloader:
             if cutoff and post.taken_at <= cutoff:
                 log.info("fast-update: reached %s, stopping", post.taken_at.isoformat())
                 break
+            if not self._keep(post):
+                continue
             await self._save_post(post, target_dir)
             if latest_seen is None or post.taken_at > latest_seen:
                 latest_seen = post.taken_at
@@ -88,6 +102,8 @@ class Downloader:
         target_dir = self.options.dest / f"#{safe_component(tag, fallback='tag')}"
         target_dir.mkdir(parents=True, exist_ok=True)
         async for post in self.backend.iter_hashtag_posts(tag):
+            if not self._keep(post):
+                continue
             await self._save_post(post, target_dir)
 
     async def _save_post(self, post: Post, target_dir: Path) -> None:

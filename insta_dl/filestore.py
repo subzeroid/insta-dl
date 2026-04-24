@@ -2,8 +2,11 @@ from __future__ import annotations
 
 import os
 import re
-from datetime import datetime
-from pathlib import Path
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from datetime import datetime
+    from pathlib import Path
 
 # C0 + C1 control chars, path separators, and Windows-forbidden chars
 _UNSAFE_CHARS = re.compile(r"[\x00-\x1f\x7f-\x9f/\\:*?\"<>|]")

@@ -1,9 +1,8 @@
 from __future__ import annotations
 
 import json
-from collections.abc import AsyncIterator
 from datetime import UTC, datetime
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
 
@@ -11,6 +10,10 @@ from insta_dl.backend import InstagramBackend
 from insta_dl.downloader import Downloader, DownloadOptions
 from insta_dl.latest_stamps import LatestStamps
 from insta_dl.models import Comment, Highlight, MediaResource, MediaType, Post, Profile, StoryItem
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncIterator
+    from pathlib import Path
 
 
 class FakeBackend(InstagramBackend):

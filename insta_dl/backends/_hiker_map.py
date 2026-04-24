@@ -39,7 +39,7 @@ def _media_type(raw: Any) -> MediaType:
     return MediaType.PHOTO
 
 
-def _resource_from_node(node: dict) -> MediaResource:
+def _resource_from_node(node: dict[str, Any]) -> MediaResource:
     is_video = bool(node.get("video_url")) or int(node.get("media_type") or 0) == _VIDEO
     if is_video:
         url = node.get("video_url") or _best_video_url(node)
@@ -53,22 +53,22 @@ def _resource_from_node(node: dict) -> MediaResource:
     )
 
 
-def _best_image_url(node: dict) -> str | None:
+def _best_image_url(node: dict[str, Any]) -> str | None:
     iv2 = node.get("image_versions2") or {}
     candidates = iv2.get("candidates") or []
     if candidates:
-        return candidates[0].get("url")
+        return candidates[0].get("url")  # type: ignore[no-any-return]
     return None
 
 
-def _best_video_url(node: dict) -> str | None:
+def _best_video_url(node: dict[str, Any]) -> str | None:
     versions = node.get("video_versions") or []
     if versions:
-        return versions[0].get("url")
+        return versions[0].get("url")  # type: ignore[no-any-return]
     return None
 
 
-def map_profile(raw: dict) -> Profile:
+def map_profile(raw: dict[str, Any]) -> Profile:
     return Profile(
         pk=str(raw["pk"]),
         username=raw["username"],
@@ -83,7 +83,7 @@ def map_profile(raw: dict) -> Profile:
     )
 
 
-def map_post(raw: dict) -> Post:
+def map_post(raw: dict[str, Any]) -> Post:
     media_type = _media_type(raw.get("media_type"))
     user = raw.get("user") or {}
     location = raw.get("location") or {}
@@ -114,7 +114,7 @@ def map_post(raw: dict) -> Post:
     )
 
 
-def map_story(raw: dict) -> StoryItem:
+def map_story(raw: dict[str, Any]) -> StoryItem:
     user = raw.get("user") or {}
     media_type = _media_type(raw.get("media_type"))
     return StoryItem(
@@ -128,7 +128,7 @@ def map_story(raw: dict) -> StoryItem:
     )
 
 
-def map_highlight(raw: dict) -> Highlight:
+def map_highlight(raw: dict[str, Any]) -> Highlight:
     user = raw.get("user") or {}
     cover = raw.get("cover_media") or {}
     cover_url = None
@@ -143,7 +143,7 @@ def map_highlight(raw: dict) -> Highlight:
     )
 
 
-def map_comment(raw: dict) -> Comment:
+def map_comment(raw: dict[str, Any]) -> Comment:
     user = raw.get("user") or {}
     created = raw.get("created_at") or raw.get("created_at_utc")
     if created is None:

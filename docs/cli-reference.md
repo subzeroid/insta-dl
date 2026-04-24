@@ -3,7 +3,7 @@
 ## Synopsis
 
 ```text
-insta-dl [-h] [-v]
+insta-dl [-h] [-V] [-v]
          [--backend {hiker,aiograpi}]
          [--dest DEST]
          [--hiker-token HIKER_TOKEN]
@@ -12,7 +12,7 @@ insta-dl [-h] [-v]
          [--latest-stamps LATEST_STAMPS]
          [--comments]
          [--stories] [--highlights]
-         [--post-filter POST_FILTER]
+         [--post-filter EXPR]
          targets [targets ...]
 ```
 
@@ -74,7 +74,7 @@ URL parsing is case-insensitive, anchored on the host (`evil.com/instagram.com/.
 | `--comments` | Save a `<post>_comments.json` sidecar per post, streamed incrementally. |
 | `--stories` | Also download the user's stories (active 24h slot). Lands in `<dest>/<username>/stories/`. |
 | `--highlights` | Also download the user's saved highlights. Lands in `<dest>/<username>/highlights/<id>_<title>/`. |
-| `--post-filter EXPR` | Reserved. Currently parsed and ignored with a warning. |
+| `--post-filter EXPR` | Restricted-AST predicate evaluated against each post; posts where the expression is falsy are skipped. See [Post filter expressions](#post-filter-expressions) below. |
 
 ### Logging
 
@@ -87,6 +87,52 @@ URL parsing is case-insensitive, anchored on the host (`evil.com/instagram.com/.
 | Flag | Description |
 |---|---|
 | `-h`, `--help` | Print usage and exit. |
+| `-V`, `--version` | Print version and exit. |
+
+## Post filter expressions
+
+`--post-filter EXPR` compiles a Python-like expression once and runs it against each post; a falsy result skips the post. Only a restricted AST is accepted — no attribute access, subscription, calls, or lambdas — so misuse fails fast rather than silently pulling everything.
+
+Names available inside the expression:
+
+| Name | Type | Value |
+|---|---|---|
+| `likes` | `int` | `post.like_count` or `0` if unknown |
+| `comments` | `int` | `post.comment_count` or `0` if unknown |
+| `caption` | `str` | Post caption, empty string if none |
+| `code` | `str` | Shortcode (e.g. `DXZlTiKEpxw`) |
+| `username` | `str` | `post.owner_username` |
+| `location` | `str` | Location name, empty string if none |
+| `taken_at` | `datetime` | Post timestamp (use `year` / `month` / `day` for comparisons) |
+| `year`, `month`, `day` | `int` | Convenience extracts of `taken_at` |
+| `is_video`, `is_photo`, `is_album` | `bool` | Media-type flags |
+
+Examples:
+
+```bash
+insta-dl --post-filter 'likes > 1000 and is_video'             instagram
+insta-dl --post-filter "'sunset' in caption"                   '#photography'
+insta-dl --post-filter 'year == 2026 and month >= 4'           instagram
+insta-dl --post-filter "username in ('instagram', 'meta')"     '#tech'
+```
+
+## Shell completions
+
+insta-dl is compatible with [argcomplete](https://kislyuk.github.io/argcomplete/). Enable once per shell:
+
+```bash
+# bash / zsh — one-off
+eval "$(register-python-argcomplete insta-dl)"
+
+# bash — persistent
+activate-global-python-argcomplete --user
+
+# zsh — add to ~/.zshrc
+autoload -U bashcompinit && bashcompinit
+eval "$(register-python-argcomplete insta-dl)"
+```
+
+After activation: `insta-dl --<TAB>` completes flag names.
 
 ## Exit codes
 
