@@ -35,7 +35,7 @@ Grab a free HikerAPI token at [hikerapi.com](https://hikerapi.com/p/18j4ib4j) â€
 - writes a **JSON metadata sidecar** next to every post (caption, like count, location, owner),
 - supports **incremental updates** with `--fast-update` and `--latest-stamps`,
 - accepts profile names, `#hashtag`, post shortcodes, and full `instagram.com` URLs,
-- ships **two interchangeable backends**: a paid commercial API (HikerAPI, no Instagram session, no ban risk) and an open-source private-API library (aiograpi, your own login).
+- ships **two pluggable backends**: a paid commercial API (HikerAPI, no Instagram session, no ban risk) out of the box, and an opt-in private-API library via `pip install 'instagram-dl[aiograpi]'` (your own login).
 
 ```text
 insta-dl [--backend hiker|aiograpi]
