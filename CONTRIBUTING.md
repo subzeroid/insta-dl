@@ -87,8 +87,12 @@ Then open <http://localhost:8000>. The site auto-deploys to GitHub Pages on push
 - Branch from `main`, rebase before opening the PR.
 - One logical change per PR.
 - All tests must pass; coverage shouldn't drop more than 1%.
-- Update `CHANGELOG.md` under "Unreleased".
+- Use [Conventional Commits](https://www.conventionalcommits.org/) in the commit title — `feat:`, `fix:`, `refactor:`, `docs:`, `perf:`, `test:`, `ci:`, `chore:`. `release-please` reads these to draft the next version and CHANGELOG entry, so the prefix matters.
 - For new CLI flags or backend methods, update `docs/cli-reference.md` and `docs/backends.md`.
+
+## Releases
+
+Releases are automated via [`release-please`](https://github.com/googleapis/release-please): every push to `main` updates a "chore(main): release …" PR that collects Conventional Commits into a new version + CHANGELOG entry. Merging that PR tags the release; the tag push triggers `release.yml` which builds the wheel/sdist, publishes to PyPI via trusted publishing (OIDC, no token), and attaches the artifacts to the GitHub release. `docker.yml` simultaneously builds and pushes the multi-arch image to `ghcr.io`.
 
 ## Security
 

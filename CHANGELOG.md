@@ -16,6 +16,11 @@ All notable changes to insta-dl. Format follows [Keep a Changelog](https://keepa
 
 - **`aiograpi` is now an optional extra.** `pip install instagram-dl` installs only what the default `hiker` backend needs; users who want aiograpi run `pip install 'instagram-dl[aiograpi]'`. Drops ~40 MB from the default install (pydantic-core, orjson, moviepy) and unblocks Python 3.14 (upstream Rust deps don't build on 3.14 yet). Selecting `--backend aiograpi` without the extra fails fast with a clear install hint.
 - `mypy` config flipped to `strict = true`; `ruff` rule set expanded to include `TCH`, `PTH`, `ARG`, `RET`, `C4`.
+- `insta_dl.__version__` is now read from installed package metadata (`importlib.metadata.version`) instead of being hardcoded. One source of truth in `pyproject.toml`.
+
+### Infra
+
+- `release-please` wired up (`.github/workflows/release-please.yml`): every merge to `main` updates a standing "chore(main): release X.Y.Z" PR with the next version + CHANGELOG entry derived from Conventional Commits. Merging that PR tags the release, which triggers the existing `release.yml` / `docker.yml` pipelines.
 
 [Unreleased]: https://github.com/subzeroid/insta-dl/compare/v0.0.2...HEAD
 
