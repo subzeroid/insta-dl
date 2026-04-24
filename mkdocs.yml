@@ -1,0 +1,67 @@
+site_name: insta-dl
+site_description: Async Instagram downloader CLI with pluggable backends.
+site_url: https://subzeroid.github.io/insta-dl/
+repo_url: https://github.com/subzeroid/insta-dl
+repo_name: subzeroid/insta-dl
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: black
+      accent: deep purple
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: black
+      accent: deep purple
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+    - content.code.annotate
+    - search.suggest
+    - search.highlight
+
+nav:
+  - Home: index.md
+  - Installation: installation.md
+  - Basic usage: basic-usage.md
+  - CLI reference: cli-reference.md
+  - Backends: backends.md
+  - Python API: python-api.md
+  - Troubleshooting: troubleshooting.md
+  - Architecture: architecture.md
+  - Contributing: contributing.md
+  - Changelog: changelog.md
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences
+  - pymdownx.snippets:
+      base_path:
+        - .
+        - docs
+  - pymdownx.tabbed:
+      alternate_style: true
+
+plugins:
+  - search
