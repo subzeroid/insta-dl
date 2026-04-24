@@ -2,6 +2,25 @@
 
 All notable changes to insta-dl. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning follows [SemVer](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.2] — 2026-04-24
+
+### Added
+
+- Multi-arch Docker image at `ghcr.io/subzeroid/insta-dl` (linux/amd64, linux/arm64).
+- `pipx install instagram-dl` instructions for isolated CLI installs.
+- Documentation page comparing insta-dl to instaloader, yt-dlp, and gallery-dl (`docs/comparison.md`).
+- `SECURITY.md`, GitHub issue/PR templates, and Dependabot configuration.
+- Pre-commit hook configuration (`ruff`, `mypy`, basic hygiene).
+- Codecov integration on `tests` CI job.
+
+### Changed
+
+- Release pipeline is now fully automated via GitHub Actions + PyPI trusted publishing; a `v*` tag push builds, publishes, and attaches artifacts to the GitHub release.
+- README badges now point at live PyPI/Codecov/Actions data instead of hardcoded shields.
+- README links directly to the HikerAPI free-tier signup.
+
+[0.0.2]: https://github.com/subzeroid/insta-dl/releases/tag/v0.0.2
+
 ## [0.0.1] — 2026-04-24
 
 ### Added
