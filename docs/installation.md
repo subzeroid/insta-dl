@@ -68,7 +68,13 @@ For shells started fresh, add the export to `~/.zshrc` / `~/.bashrc` or use a se
 
 ## Set up aiograpi *(optional, in development)*
 
-The aiograpi backend uses your real Instagram credentials. It's stubbed pending an upstream sync — these instructions will work once the integration ships:
+The aiograpi backend uses your real Instagram credentials. Its transitive Rust deps (pydantic-core, orjson) are **not** pulled in by the default install — opt in with an extra:
+
+```bash
+pip install 'instagram-dl[aiograpi]'
+```
+
+It's stubbed pending an upstream sync — these instructions will work once the integration ships:
 
 ```bash
 insta-dl --backend aiograpi --login YOUR_USER --password YOUR_PASS \

@@ -12,20 +12,10 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
-    # Python 3.14 is listed below as an informational target. aiograpi's
-    # transitive Rust deps (pydantic-core / jiter / orjson) don't yet
-    # support 3.14 — the job will fail at `pip install` until upstream
-    # catches up. `continue-on-error` keeps the overall workflow green
-    # so we don't suppress real regressions on 3.11–3.13.
-    continue-on-error: ${{ matrix.experimental == true }}
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.11", "3.12", "3.13"]
-        experimental: [false]
-        include:
-          - python-version: "3.14"
-            experimental: true
+        python-version: ["3.11", "3.12", "3.13", "3.14"]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v6

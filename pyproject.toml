@@ -42,7 +42,6 @@ classifiers = [
 ]
 dependencies = [
     "hikerapi",
-    "aiograpi",
     "argcomplete>=3",
 ]
 
@@ -54,6 +53,9 @@ Issues = "https://github.com/subzeroid/insta-dl/issues"
 Changelog = "https://github.com/subzeroid/insta-dl/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
+aiograpi = [
+    "aiograpi",
+]
 dev = [
     "pytest>=8",
     "pytest-asyncio>=0.23",

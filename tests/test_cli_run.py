@@ -120,14 +120,16 @@ class TestMain:
         assert not list(tmp_path.glob("*.tmp"))
 
     def test_aiograpi_emits_friendly_error(self, tmp_path, monkeypatch, capsys):
-        # No fake_make_backend — exercise the real factory + AiograpiBackend stub
+        # No fake_make_backend — exercise the real factory + AiograpiBackend stub.
+        # With the extra installed: message mentions "not yet implemented".
+        # Without the extra: message points at `pip install 'instagram-dl[aiograpi]'`.
         monkeypatch.setattr("sys.argv", [
             "insta-dl", "--backend", "aiograpi", "--dest", str(tmp_path), "foo",
         ])
         rc = cli.main()
         assert rc == 2
         err = capsys.readouterr().err
-        assert "aiograpi backend is not yet implemented" in err
+        assert "not yet implemented" in err or "not installed" in err
         assert "Traceback" not in err
 
     def test_keyboard_interrupt_returns_130(self, fake_make_backend, tmp_path, monkeypatch):

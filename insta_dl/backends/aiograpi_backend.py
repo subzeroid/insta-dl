@@ -28,6 +28,12 @@ class AiograpiBackend(InstagramBackend):
         password: str | None = None,
         session_path: Path | None = None,
     ) -> None:
+        try:
+            import aiograpi  # noqa: F401
+        except ImportError:
+            raise UnsupportedByBackendError(
+                "aiograpi is not installed. Run: pip install 'instagram-dl[aiograpi]'"
+            ) from None
         raise UnsupportedByBackendError(
             "aiograpi backend is not yet implemented. Use --backend hiker for now. "
             "Track progress at https://github.com/subzeroid/insta-dl/issues"

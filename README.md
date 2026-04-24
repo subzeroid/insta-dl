@@ -111,6 +111,7 @@ Switch with `--backend`:
 
 ```bash
 insta-dl --backend hiker --hiker-token TOKEN instagram
+pip install 'instagram-dl[aiograpi]'   # aiograpi's deps are opt-in
 insta-dl --backend aiograpi --login USER --password PASS --session ./session.json instagram
 ```
 

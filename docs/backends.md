@@ -60,6 +60,14 @@ The hiker backend talks to `https://api.hikerapi.com` for metadata and to Instag
 
 ## aiograpi — setup *(in development)*
 
+aiograpi and its transitive Rust dependencies (pydantic-core, orjson) are **not** pulled in by a bare `pip install instagram-dl`. Opt in explicitly:
+
+```bash
+pip install 'instagram-dl[aiograpi]'
+```
+
+Without the extra, selecting `--backend aiograpi` fails fast with a message telling you which extra to install. With the extra installed:
+
 ```bash
 insta-dl --backend aiograpi \
     --login YOUR_USERNAME \

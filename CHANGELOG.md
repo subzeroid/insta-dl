@@ -10,9 +10,11 @@ All notable changes to insta-dl. Format follows [Keep a Changelog](https://keepa
 - `--post-filter EXPR` now works. Predicate expressions are parsed into a restricted AST (no attribute access, subscription, calls, or lambdas) and evaluated against each post against a sealed namespace. Names: `likes`, `comments`, `caption`, `code`, `username`, `location`, `taken_at`, `year`/`month`/`day`, `is_video`/`is_photo`/`is_album`.
 - Shell completions via `argcomplete` (documented in `docs/cli-reference.md`). `insta-dl --<TAB>` after `eval "$(register-python-argcomplete insta-dl)"`.
 - Retry/backoff for transient failures: HTTP 408/425/429/5xx and `httpx.TransportError` are retried with exponential backoff + jitter, honoring `Retry-After`. Applies to every HikerAPI API call and to CDN downloads.
+- Python 3.11 / 3.12 / 3.13 / 3.14 tested in CI matrix.
 
 ### Changed
 
+- **`aiograpi` is now an optional extra.** `pip install instagram-dl` installs only what the default `hiker` backend needs; users who want aiograpi run `pip install 'instagram-dl[aiograpi]'`. Drops ~40 MB from the default install (pydantic-core, orjson, moviepy) and unblocks Python 3.14 (upstream Rust deps don't build on 3.14 yet). Selecting `--backend aiograpi` without the extra fails fast with a clear install hint.
 - `mypy` config flipped to `strict = true`; `ruff` rule set expanded to include `TCH`, `PTH`, `ARG`, `RET`, `C4`.
 
 [Unreleased]: https://github.com/subzeroid/insta-dl/compare/v0.0.2...HEAD
