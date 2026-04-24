@@ -15,6 +15,8 @@ export HIKERAPI_TOKEN=your_token
 insta-dl instagram
 ```
 
+Grab a free HikerAPI token at [hikerapi.com](https://hikerapi.com/p/18j4ib4j) — **first 100 requests are free**, no credit card. One request ≈ one post or one page of a feed.
+
 **insta-dl**
 
 - downloads **profiles, hashtags, single posts, reels, stories, highlights, and comments**,
