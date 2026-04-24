@@ -2,6 +2,18 @@
 
 All notable changes to insta-dl. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning follows [SemVer](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.0](https://github.com/subzeroid/insta-dl/compare/v0.0.2...v0.1.0) (2026-04-24)
+
+
+### Features
+
+* --version, --post-filter, shell completions, retry/backoff, strict types ([d43bcba](https://github.com/subzeroid/insta-dl/commit/d43bcbabf6c394ce69834430425086d9d987b59e))
+
+
+### Documentation
+
+* **readme:** add demo GIF ([568feea](https://github.com/subzeroid/insta-dl/commit/568feeaeae08bc1dea1f43f45f54e0aa0c3cfa2c))
+
 ## [Unreleased]
 
 ### Added
