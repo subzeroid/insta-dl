@@ -43,6 +43,7 @@ classifiers = [
 dependencies = [
     "hikerapi",
     "argcomplete>=3",
+    "tqdm>=4.66",
 ]
 
 [project.urls]

@@ -2,6 +2,16 @@
 
 All notable changes to insta-dl. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning follows [SemVer](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Download progress bar via `tqdm` on every CDN fetch. Shows filename, bytes transferred, total (when Content-Length is declared), and rate. Writes to stderr so piped stdout is unaffected; auto-suppressed on non-TTY.
+
+### Infra
+
+- `pr-title.yml`: validates that pull request titles follow Conventional Commits (`feat:`, `fix:`, `refactor:`, `docs:`, ...). Keeps release-please's input clean so every merged PR maps to the correct CHANGELOG section.
+
 ## [0.1.0](https://github.com/subzeroid/insta-dl/compare/v0.0.2...v0.1.0) (2026-04-24)
 
 

@@ -188,8 +188,12 @@ class HikerBackend(InstagramBackend):
                                 )
                         except ValueError:
                             pass
+                    total = _parse_total(declared)
                     written = 0
-                    with part.open("wb") as f:
+                    with (
+                        part.open("wb") as f,
+                        _progress_bar(dest.name, total) as bar,
+                    ):
                         async for chunk in resp.aiter_bytes():
                             written += len(chunk)
                             if written > self._max_bytes:
@@ -197,6 +201,7 @@ class HikerBackend(InstagramBackend):
                                     f"download exceeded max {self._max_bytes} bytes"
                                 )
                             f.write(chunk)
+                            bar.update(len(chunk))
                     break
             else:
                 raise BackendError(f"too many redirects (>{_MAX_REDIRECTS}) for {_host(url)}")
@@ -205,6 +210,30 @@ class HikerBackend(InstagramBackend):
             part.unlink(missing_ok=True)
             raise
         return dest
+
+
+def _parse_total(declared: str | None) -> int | None:
+    if declared is None:
+        return None
+    try:
+        return int(declared)
+    except ValueError:
+        return None
+
+
+def _progress_bar(name: str, total: int | None) -> Any:
+    from tqdm import tqdm
+
+    return tqdm(
+        total=total,
+        unit="B",
+        unit_scale=True,
+        unit_divisor=1024,
+        desc=name,
+        leave=False,
+        dynamic_ncols=True,
+        miniters=1,
+    )
 
 
 def _host(url: str) -> str:
