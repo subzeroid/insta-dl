@@ -28,7 +28,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument(
         "targets",
         nargs="+",
-        help="Targets: username, #hashtag, post:SHORTCODE, or instagram.com URL",
+        help="Targets: username, #hashtag, post:SHORTCODE, info:USERNAME, or instagram.com URL",
     )
     p.add_argument("-V", "--version", action="version", version=f"%(prog)s {__version__}")
     verbosity = p.add_mutually_exclusive_group()
@@ -87,6 +87,13 @@ async def _dispatch(downloader: Downloader, target: str) -> None:
         return
     if target.startswith("post:"):
         await downloader.download_post(target[len("post:"):])
+        return
+    if target.startswith("info:"):
+        import json as _json
+        from dataclasses import asdict
+
+        profile = await downloader.backend.get_profile(target[len("info:"):])
+        sys.stdout.write(_json.dumps(asdict(profile), ensure_ascii=False, indent=2) + "\n")
         return
     if target.startswith(("http://", "https://")):
         url_match = _URL_RE.match(target.split("?", 1)[0].split("#", 1)[0])

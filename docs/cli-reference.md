@@ -25,6 +25,7 @@ Positional. One or more, mixed forms allowed.
 | `<username>` | Download all posts by a profile | `instagram` |
 | `#<tag>` | Download recent posts for a hashtag (quote it!) | `'#sunset'` |
 | `post:<shortcode>` | Download one post / reel by shortcode | `post:DXZlTiKEpxw` |
+| `info:<username>` | Print profile metadata as JSON to stdout and exit (no download) | `info:instagram` |
 | `https://[www.]instagram.com/p/<code>/` | Same, by URL | `https://www.instagram.com/p/DXZlTiKEpxw/` |
 | `https://[www.]instagram.com/reel/<code>/` | Same, for reels | `https://instagram.com/reel/DXZlTiKEpxw/` |
 | `https://[www.]instagram.com/tv/<code>/` | Same, for IGTV | `https://instagram.com/tv/DXZlTiKEpxw/` |
