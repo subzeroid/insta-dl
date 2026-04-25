@@ -55,7 +55,7 @@ Changelog = "https://github.com/subzeroid/insta-dl/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 aiograpi = [
-    "aiograpi",
+    "aiograpi>=0.1.1",
 ]
 dev = [
     "pytest>=8",
