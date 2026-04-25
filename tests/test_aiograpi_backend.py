@@ -17,8 +17,8 @@ import pytest
 # module instead of failing test collection.
 pytest.importorskip("aiograpi")
 
-from insta_dl.backends.aiograpi_backend import AiograpiBackend  # noqa: E402
-from insta_dl.exceptions import AuthError  # noqa: E402
+from insta_dl.backends.aiograpi_backend import AiograpiBackend
+from insta_dl.exceptions import AuthError
 
 
 def _user(pk=99, username="foo"):
