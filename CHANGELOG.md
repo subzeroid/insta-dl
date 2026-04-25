@@ -2,6 +2,23 @@
 
 All notable changes to insta-dl. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning follows [SemVer](https://semver.org/spec/v2.0.0.html). Entries from 0.1.1 onward are assembled from Conventional Commits by [release-please](https://github.com/googleapis/release-please).
 
+## [0.1.7](https://github.com/subzeroid/insta-dl/compare/v0.1.6...v0.1.7) (2026-04-25)
+
+
+### Added
+
+* AiograpiBackend — full implementation against aiograpi 0.1.1 ([aaffa07](https://github.com/subzeroid/insta-dl/commit/aaffa07e91ee467b4440bb52811b00bb79c34d8f))
+
+
+### Fixed
+
+* **lint:** drop unused noqa: E402 — importorskip doesn't trigger it ([378e1a2](https://github.com/subzeroid/insta-dl/commit/378e1a2af89c6c3283eb9d21bd5cea0755d0a60d))
+
+
+### Documentation
+
+* --concurrency now caps fetches profile-wide, not just per post ([2b3475c](https://github.com/subzeroid/insta-dl/commit/2b3475c0378dc9060d2347ee9204023b683d9f48))
+
 ## [0.1.6](https://github.com/subzeroid/insta-dl/compare/v0.1.5...v0.1.6) (2026-04-25)
 
 
