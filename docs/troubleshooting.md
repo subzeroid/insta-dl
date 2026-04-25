@@ -63,19 +63,17 @@ There's no CLI flag for this yet — open an issue if you need one.
 
 ### `httpx.ConnectError` / connection reset
 
-No retry/backoff layer is implemented yet. Re-run; if the run was interrupted partway, `--fast-update` will pick up from the freshest post on disk. Avoid running multiple insta-dl processes against the same `--dest` — `.part` files are uniquely named per call but parallel writers can still race on the final atomic rename.
+The hiker backend retries transport errors automatically (exponential backoff + jitter, up to 5 attempts). If you still see this, the failure is not transient — re-run and `--fast-update` will pick up from the freshest post on disk. Avoid running multiple insta-dl processes against the same `--dest` — `.part` files are uniquely named per call but parallel writers can still race on the final atomic rename.
 
 ## Rate limits
 
 ### HikerAPI 429
 
-You've burned through your monthly quota or hit a per-minute throttle. Options:
+You've burned through your monthly quota or hit a per-minute throttle. The backend retries automatically with exponential backoff (and honors `Retry-After` when present), so transient throttles resolve themselves. If you keep hitting it after 5 attempts:
 
 - Wait it out (per-minute caps reset within seconds).
 - Check usage at the HikerAPI dashboard.
 - For long-running jobs, add a `sleep` between targets in your shell loop.
-
-A built-in retry/backoff is on the roadmap but not yet implemented.
 
 ### Instagram 429 (aiograpi backend)
 

@@ -141,7 +141,7 @@ InstaDlError
     ├── AuthError              — missing/wrong token, login failed
     ├── NotFoundError          — profile / post does not exist
     ├── UnsupportedByBackendError — feature not available for this backend
-    └── RateLimitedError       — 429 from upstream (no retry yet)
+    └── RateLimitedError       — 429 from upstream (HikerBackend retries with backoff first)
 ```
 
 Catch the broad `BackendError` for transport-level problems; the more specific subclasses for actionable cases.

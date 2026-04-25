@@ -135,14 +135,12 @@ Hashtag downloads land under `<dest>/#<tag>/`; single-post downloads use the pos
 
 ## Status
 
-This is **alpha**. The hiker backend is functional end-to-end (197 tests, 95% coverage). The aiograpi backend is stubbed pending an upstream sync. CLI flags and output layout are stable; Python API may still shift.
+This is **alpha**. The hiker backend is functional end-to-end (224 tests, 95% coverage). The aiograpi backend is stubbed pending an upstream sync (and ships behind the `[aiograpi]` extra so its Rust deps don't bloat default installs). CLI flags and output layout are stable; Python API may still shift.
 
 What's not yet implemented:
 
 - private profiles requiring login (waiting on aiograpi)
 - `:feed` and `:saved` (account-bound, blocked on aiograpi)
-- post-filter expressions (planned: AST-restricted eval)
-- automatic retry/backoff on 429/5xx
 
 See the [changelog](CHANGELOG.md) for what landed when, and [contributing](CONTRIBUTING.md) for how to help.
 

@@ -3,7 +3,7 @@
 Async command-line downloader for Instagram. Profiles, posts, reels, stories, highlights, hashtags, and comments — saved to disk with original timestamps preserved.
 
 ```bash
-pip install insta-dl
+pip install instagram-dl
 
 export HIKERAPI_TOKEN=your_token
 insta-dl instagram

@@ -65,7 +65,7 @@ The arrow points down: each layer depends only on what's below it. Backends neve
 
 **Pagination hidden inside iterators.** Callers do `async for post in backend.iter_user_posts(pk)` and don't know whether it's cursor-based, page-id, or section-extraction. The contract: `iter_user_posts` is newest-first; `Downloader.fast_update` relies on this.
 
-**No retry/backoff yet.** Deferred. When implemented, it lives at the adapter layer (one decorator around `_client` calls), not in `Downloader`.
+**Retry/backoff lives at the adapter layer.** `insta_dl/retry.py` exposes `retry_call` (ad-hoc) and `with_retry` (decorator). `HikerBackend` wraps every `_client` API call and `download_resource` with `retry_call`; `Downloader` stays oblivious. Retries on `httpx.TransportError` and HTTP 408/425/429/5xx, with exponential backoff + jitter and `Retry-After` honoring.
 
 ## Testing strategy
 
@@ -74,7 +74,7 @@ The arrow points down: each layer depends only on what's below it. Backends neve
 - HTTP path → tested with `httpx.MockTransport`. Covers SSRF rejection, scheme-downgrade rejection, redirect-loop limit, `Content-Length` overflow, streaming overflow, missing `Location`, `.part` cleanup, concurrent same-dest writes.
 - `Downloader` integration → `FakeBackend` driving the full facade, checking file layout, mtime, sidecar JSON, comments streaming, fast-update cutoff, untrusted-username sanitization.
 
-198 tests, 95% coverage. The 5% missed: `__main__.py` trampoline (4 lines), abstract `...` placeholders, two `if __name__ == "__main__"` lines, a few defensive-error branches.
+224 tests, 95% coverage. The 5% missed: `__main__.py` trampoline (4 lines), abstract `...` placeholders, two `if __name__ == "__main__"` lines, a few defensive-error branches.
 
 ## What changes when the schema drifts
 
