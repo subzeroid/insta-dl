@@ -23,7 +23,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: pip
       - run: pip install -e '.[dev]'
-      - run: pytest --cov=insta_dl --cov-report=term-missing --cov-report=xml --cov-fail-under=90
+      - run: pytest --cov=insta_dl --cov-report=term-missing --cov-report=xml --cov-fail-under=93
       - uses: codecov/codecov-action@v6
         if: matrix.python-version == '3.12'
         with:
