@@ -82,7 +82,11 @@ def build_parser() -> argparse.ArgumentParser:
         type=int,
         default=4,
         metavar="N",
-        help="parallel CDN fetches per post (default: 4). Higher = faster carousel posts, more CDN load.",
+        help=(
+            "max parallel CDN fetches across the whole run (default: 4). "
+            "Speeds up profiles with many posts and carousels with many resources. "
+            "Higher = faster, more CDN load."
+        ),
     )
     try:
         import argcomplete

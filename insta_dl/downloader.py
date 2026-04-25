@@ -87,15 +87,26 @@ class Downloader:
         cutoff = self._cutoff_for(stamp_key)
         latest_seen: datetime | None = None
 
+        # Kick off `_save_post` for every kept post in parallel; the shared
+        # `_sem` (sized by --concurrency) caps CDN fetches across the whole
+        # profile. The cursor itself is sequential, so the fast-update cutoff
+        # still short-circuits correctly before queuing later posts.
+        tasks: list[asyncio.Task[None]] = []
         async for post in self.backend.iter_user_posts(profile.pk):
             if cutoff and post.taken_at <= cutoff:
                 log.info("fast-update: reached %s, stopping", post.taken_at.isoformat())
                 break
             if not self._keep(post):
                 continue
-            await self._save_post(post, target_dir)
+            tasks.append(asyncio.create_task(self._save_post(post, target_dir)))
             if latest_seen is None or post.taken_at > latest_seen:
                 latest_seen = post.taken_at
+
+        if tasks:
+            results = await asyncio.gather(*tasks, return_exceptions=True)
+            for result in results:
+                if isinstance(result, BaseException):
+                    log.warning("post failed: %s", result)
 
         if latest_seen and self.options.latest_stamps is not None:
             self.options.latest_stamps.set_post_timestamp(stamp_key, latest_seen)
@@ -132,10 +143,16 @@ class Downloader:
         before = _snapshot(self.stats)
         target_dir = self.options.dest / f"#{safe_component(tag, fallback='tag')}"
         target_dir.mkdir(parents=True, exist_ok=True)
+        tasks: list[asyncio.Task[None]] = []
         async for post in self.backend.iter_hashtag_posts(tag):
             if not self._keep(post):
                 continue
-            await self._save_post(post, target_dir)
+            tasks.append(asyncio.create_task(self._save_post(post, target_dir)))
+        if tasks:
+            results = await asyncio.gather(*tasks, return_exceptions=True)
+            for result in results:
+                if isinstance(result, BaseException):
+                    log.warning("post failed: %s", result)
         log.info("#%s: %s", tag, _delta(self.stats, before).summary(dry_run=self.options.dry_run))
 
     async def _save_post(self, post: Post, target_dir: Path) -> None:

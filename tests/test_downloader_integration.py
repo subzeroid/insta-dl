@@ -347,6 +347,125 @@ class TestConcurrency:
         assert backend.peak_in_flight >= 2, "at least some parallelism expected"
         assert backend.peak_in_flight <= 4, f"capped at concurrency=4, saw {backend.peak_in_flight}"
 
+    async def test_profile_posts_run_in_parallel(self, tmp_path):
+        """Multiple single-photo posts in a profile fan out concurrently
+        under the shared `--concurrency` cap, instead of serializing.
+        """
+        import asyncio as _asyncio
+
+        from insta_dl.backend import InstagramBackend
+
+        class TrackingBackend(InstagramBackend):
+            name = "track"
+
+            def __init__(self, posts):
+                self._posts = posts
+                self.in_flight = 0
+                self.peak_in_flight = 0
+                self.calls = 0
+
+            async def close(self): pass
+            async def get_profile(self, username):
+                return _profile(username)
+            async def get_post_by_shortcode(self, code): ...
+
+            async def iter_user_posts(self, pk):
+                for p in self._posts:
+                    yield p
+
+            async def iter_user_stories(self, pk):
+                if False:
+                    yield
+            async def iter_user_highlights(self, pk):
+                if False:
+                    yield
+            async def iter_highlight_items(self, pk):
+                if False:
+                    yield
+            async def iter_hashtag_posts(self, tag):
+                if False:
+                    yield
+            async def iter_post_comments(self, pk):
+                if False:
+                    yield
+
+            async def download_resource(self, url, dest):
+                self.calls += 1
+                self.in_flight += 1
+                self.peak_in_flight = max(self.peak_in_flight, self.in_flight)
+                try:
+                    await _asyncio.sleep(0.05)
+                    dest.parent.mkdir(parents=True, exist_ok=True)
+                    dest.write_bytes(b"x")
+                    return dest
+                finally:
+                    self.in_flight -= 1
+
+        # 6 separate single-photo posts. Sequentially this would peak at 1.
+        posts = [_post(code=f"P{i}") for i in range(6)]
+        backend = TrackingBackend(posts)
+        opts = DownloadOptions(dest=tmp_path, concurrency=4)
+        await Downloader(backend, opts).download_profile("foo")
+        assert backend.calls == 6
+        assert backend.peak_in_flight >= 2, "expected cross-post parallelism"
+        assert backend.peak_in_flight <= 4, f"capped at concurrency=4, saw {backend.peak_in_flight}"
+
+    async def test_one_failing_post_does_not_kill_siblings(self, tmp_path, caplog):
+        """A failure in one post must not cancel the others — log + continue."""
+        from insta_dl.backend import InstagramBackend
+
+        class FlakyBackend(InstagramBackend):
+            name = "flaky"
+
+            def __init__(self, posts):
+                self._posts = posts
+                self.downloaded = []
+
+            async def close(self): pass
+            async def get_profile(self, u):
+                return _profile(u)
+            async def get_post_by_shortcode(self, code): ...
+
+            async def iter_user_posts(self, pk):
+                for p in self._posts:
+                    yield p
+
+            async def iter_user_stories(self, pk):
+                if False:
+                    yield
+            async def iter_user_highlights(self, pk):
+                if False:
+                    yield
+            async def iter_highlight_items(self, pk):
+                if False:
+                    yield
+            async def iter_hashtag_posts(self, tag):
+                if False:
+                    yield
+            async def iter_post_comments(self, pk):
+                if False:
+                    yield
+
+            async def download_resource(self, url, dest):
+                if "BOOM" in url:
+                    raise RuntimeError("CDN blew up")
+                dest.parent.mkdir(parents=True, exist_ok=True)
+                dest.write_bytes(b"x")
+                self.downloaded.append(dest)
+                return dest
+
+        posts = [
+            _post(code="OK1"),
+            _post(code="BAD", resources=[MediaResource(url="https://cdn/BOOM.jpg", is_video=False)]),
+            _post(code="OK2"),
+        ]
+        backend = FlakyBackend(posts)
+        with caplog.at_level("WARNING", logger="insta_dl"):
+            await Downloader(backend, DownloadOptions(dest=tmp_path)).download_profile("foo")
+        names = sorted(p.name for p in backend.downloaded)
+        assert any("OK1" in n for n in names) and any("OK2" in n for n in names)
+        assert any("post failed" in r.message for r in caplog.records)
+
     async def test_concurrency_one_serializes(self, tmp_path):
         backend = FakeBackend(_profile(), posts=[
             _post(code="C", resources=[
