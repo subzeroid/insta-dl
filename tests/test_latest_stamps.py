@@ -56,3 +56,28 @@ def test_multiple_profiles(tmp_path):
     r = LatestStamps(path)
     assert r.get_post_timestamp("foo") == t1
     assert r.get_post_timestamp("bar") == t2
+
+
+def test_save_failure_cleans_up_tmp(tmp_path, monkeypatch):
+    """If the atomic-rename's write fails, the .tmp file must not be left behind."""
+    import pytest
+
+    path = tmp_path / "stamps.ini"
+    s = LatestStamps(path)
+    s.set_post_timestamp("foo", datetime(2026, 1, 1, tzinfo=UTC))
+
+    # Force write to fail mid-save.
+    real_replace = type(path).replace
+
+    def boom(self, target):
+        raise OSError("disk full")
+
+    monkeypatch.setattr(type(path), "replace", boom)
+    with pytest.raises(OSError, match="disk full"):
+        s.save()
+    monkeypatch.setattr(type(path), "replace", real_replace)
+
+    # No .tmp leftover — atomic-rename pattern's failure path must clean up.
+    assert not list(tmp_path.glob("*.tmp"))
+    # And the original file was never created.
+    assert not path.exists()
