@@ -2,6 +2,13 @@
 
 All notable changes to insta-dl. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning follows [SemVer](https://semver.org/spec/v2.0.0.html). Entries from 0.1.1 onward are assembled from Conventional Commits by [release-please](https://github.com/googleapis/release-please).
 
+## [0.1.6](https://github.com/subzeroid/insta-dl/compare/v0.1.5...v0.1.6) (2026-04-25)
+
+
+### Added
+
+* parallel post downloads in profile and hashtag runs ([d283408](https://github.com/subzeroid/insta-dl/commit/d283408f5b83b604eab9d77df1c8769c271a18bc))
+
 ## [0.1.5](https://github.com/subzeroid/insta-dl/compare/v0.1.4...v0.1.5) (2026-04-25)
 
 
