@@ -2,6 +2,22 @@
 
 All notable changes to insta-dl. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning follows [SemVer](https://semver.org/spec/v2.0.0.html). Entries from 0.1.1 onward are assembled from Conventional Commits by [release-please](https://github.com/googleapis/release-please).
 
+## [0.1.2](https://github.com/subzeroid/insta-dl/compare/v0.1.1...v0.1.2) (2026-04-25)
+
+
+### Added
+
+* --dry-run and --no-progress flags ([19a8641](https://github.com/subzeroid/insta-dl/commit/19a86411480a7b59ec0842d5673b2df9044c4003))
+
+
+### Documentation
+
+* add social preview banner ([eaf0117](https://github.com/subzeroid/insta-dl/commit/eaf011797993a20169e3857917ae3d5cc6a2e7a1))
+* **changelog:** clean up duplicate Unreleased sections from release-please first-run ([383eb76](https://github.com/subzeroid/insta-dl/commit/383eb76d22fd1f6e54dcfd03016f64f5a6b0ba2b))
+* redesign social preview in instagrapi-style gradient banner ([d4c3a36](https://github.com/subzeroid/insta-dl/commit/d4c3a3671e66caaac03a5be495f00dcb3854439d))
+* refine social preview tagline to product-benefit framing ([d053646](https://github.com/subzeroid/insta-dl/commit/d053646cb91ee4a11952d00af0e2ff7e446e4ca0))
+* refresh stale references after retry, post-filter, aiograpi-extra ([322a6e6](https://github.com/subzeroid/insta-dl/commit/322a6e63ca49b3493eadc36aed0b6ebcc8e6a4cb))
+
 ## [Unreleased]
 
 ## [0.1.1] — 2026-04-24
