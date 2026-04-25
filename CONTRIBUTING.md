@@ -24,7 +24,7 @@ pytest --cov=insta_dl --cov-report=term-missing # with coverage
 
 The suite is fully offline — no real HikerAPI or Instagram calls. Network is mocked via `httpx.MockTransport` and a fake hikerapi client.
 
-Coverage targets: keep pure-logic modules at 100% (`models`, `filestore`, `latest_stamps`, `exceptions`). Everything else: 90%+ where reasonable. Don't write tests for `__main__.py`.
+Coverage targets: keep pure-logic modules at 100% (`models`, `filestore`, `exceptions`, `filter_expr`). Everything else: 93%+ — that's the CI gate, enforced by `--cov-fail-under=93` in `tests.yml`. Don't write tests for `__main__.py`.
 
 ## Project layout
 

@@ -135,7 +135,7 @@ Hashtag downloads land under `<dest>/#<tag>/`; single-post downloads use the pos
 
 ## Status
 
-This is **alpha**. The hiker backend is functional end-to-end (224 tests, 95% coverage). The aiograpi backend is stubbed pending an upstream sync (and ships behind the `[aiograpi]` extra so its Rust deps don't bloat default installs). CLI flags and output layout are stable; Python API may still shift.
+This is **alpha**. The hiker backend is functional end-to-end (242 tests, 95% coverage). The aiograpi backend is stubbed pending an upstream sync (and ships behind the `[aiograpi]` extra so its Rust deps don't bloat default installs). CLI flags and output layout are stable; Python API may still shift.
 
 What's not yet implemented:
 
