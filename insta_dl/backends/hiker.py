@@ -107,7 +107,10 @@ class HikerBackend(InstagramBackend):
     async def iter_user_stories(self, user_pk: str) -> AsyncIterator[StoryItem]:
         raw = await retry_call(lambda: self._client.user_stories_v2(user_pk))
         body = _unwrap(raw)
-        items = body.get("items") or body.get("reel", {}).get("items") or []
+        # `reel` is None when the user has no active stories — `body.get("reel", {})`
+        # would skip the default in that case (key exists, value is None).
+        reel = body.get("reel") or {}
+        items = body.get("items") or reel.get("items") or []
         for item in items:
             yield map_story(item)
 
@@ -121,7 +124,16 @@ class HikerBackend(InstagramBackend):
     async def iter_highlight_items(self, highlight_pk: str) -> AsyncIterator[StoryItem]:
         raw = await retry_call(lambda: self._client.highlight_by_id_v2(id=highlight_pk))
         body = _unwrap(raw)
-        items = body.get("items") or []
+        # Live shape: `response.reels` is a dict keyed by `highlight:<pk>`
+        # whose value carries the actual `items`. Older shape (flat
+        # `response.items`) is kept as a fallback for resilience.
+        reels = body.get("reels") or {}
+        reel: dict[str, Any] = reels.get(f"highlight:{highlight_pk}") or {}
+        if not reel and reels:
+            first = next(iter(reels.values()), {})
+            if isinstance(first, dict):
+                reel = first
+        items = reel.get("items") or body.get("items") or []
         for item in items:
             yield map_story(item)
 

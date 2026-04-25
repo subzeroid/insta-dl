@@ -160,6 +160,27 @@ class TestIterStories:
         assert len(items) == 1
         assert items[0].pk == "s1"
 
+    async def test_no_active_stories_does_not_crash(self, backend):
+        # Live shape when user has no stories: top-level `reel` key exists
+        # but value is None (regression: `body.get("reel", {}).get("items")`
+        # crashed because the default {} wasn't substituted).
+        backend._client = FakeHiker({"user_stories_v2": {
+            "broadcast": None, "reel": None, "status": "ok",
+        }})
+        items = [s async for s in backend.iter_user_stories("1")]
+        assert items == []
+
+    async def test_reel_with_items(self, backend):
+        backend._client = FakeHiker({"user_stories_v2": {
+            "reel": {"items": [
+                {"pk": "s2", "media_type": 1, "taken_at": 1700000000,
+                 "user": {"pk": 1, "username": "f"}, "thumbnail_url": "https://cdn/b.jpg"},
+            ]},
+        }})
+        items = [s async for s in backend.iter_user_stories("1")]
+        assert len(items) == 1
+        assert items[0].pk == "s2"
+
 
 class TestIterHighlights:
     async def test_tray(self, backend):
@@ -172,7 +193,8 @@ class TestIterHighlights:
         assert hls[0].pk == "1001"
         assert hls[0].title == "Travel"
 
-    async def test_highlight_items(self, backend):
+    async def test_highlight_items_legacy_flat_shape(self, backend):
+        # Old/defensive shape: items directly under response.
         backend._client = FakeHiker({"highlight_by_id_v2": {
             "response": {"items": [
                 {"pk": "i1", "media_type": 1, "taken_at": 1700000000,
@@ -181,6 +203,36 @@ class TestIterHighlights:
         }})
         items = [i async for i in backend.iter_highlight_items("1001")]
         assert items[0].pk == "i1"
+
+    async def test_highlight_items_live_reels_shape(self, backend):
+        # Live shape (verified against HikerAPI 2026-04): items live under
+        # response.reels["highlight:<pk>"].items, not response.items.
+        backend._client = FakeHiker({"highlight_by_id_v2": {
+            "response": {"reels": {"highlight:1001": {
+                "id": "highlight:1001",
+                "items": [
+                    {"pk": "i2", "media_type": 2, "taken_at": 1700000000,
+                     "user": {"pk": 1, "username": "f"}, "video_url": "https://cdn/v.mp4"},
+                    {"pk": "i3", "media_type": 1, "taken_at": 1700000100,
+                     "user": {"pk": 1, "username": "f"}, "thumbnail_url": "https://cdn/p.jpg"},
+                ],
+            }}},
+        }})
+        items = [i async for i in backend.iter_highlight_items("1001")]
+        assert [it.pk for it in items] == ["i2", "i3"]
+
+    async def test_highlight_items_reels_with_unexpected_key(self, backend):
+        # If the keying convention changes, fall back to the first reel value.
+        backend._client = FakeHiker({"highlight_by_id_v2": {
+            "response": {"reels": {"some_other_key": {
+                "items": [
+                    {"pk": "i4", "media_type": 1, "taken_at": 1700000000,
+                     "user": {"pk": 1, "username": "f"}, "thumbnail_url": "https://cdn/x.jpg"},
+                ],
+            }}},
+        }})
+        items = [i async for i in backend.iter_highlight_items("1001")]
+        assert [it.pk for it in items] == ["i4"]
 
 
 class TestIterComments:
