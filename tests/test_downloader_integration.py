@@ -275,6 +275,26 @@ class TestDryRun:
         assert not list((tmp_path / "foo").glob("*_comments.json"))
 
 
+class TestCommentsJsonl:
+    async def test_jsonl_format_writes_one_object_per_line(self, tmp_path):
+        c1 = Comment(pk="c1", text="a", created_at=_ts(),
+                     user_pk="1", user_username="u1")
+        c2 = Comment(pk="c2", text="b", created_at=_ts(),
+                     user_pk="2", user_username="u2")
+        backend = FakeBackend(_profile(), posts=[_post(code="A")],
+                              comments={"A": [c1, c2]})
+        opts = DownloadOptions(dest=tmp_path, save_comments=True, comments_jsonl=True)
+        await Downloader(backend, opts).download_profile("foo")
+        files = list((tmp_path / "foo").glob("*_comments.jsonl"))
+        assert len(files) == 1, f"expected one .jsonl, got {files}"
+        # No JSON-array file written.
+        assert not list((tmp_path / "foo").glob("*_comments.json"))
+        lines = files[0].read_text(encoding="utf-8").strip().splitlines()
+        assert len(lines) == 2
+        assert json.loads(lines[0])["pk"] == "c1"
+        assert json.loads(lines[1])["pk"] == "c2"
+
+
 class TestRunStats:
     async def test_summary_logs_at_end_of_profile(self, tmp_path, caplog):
         backend = FakeBackend(_profile(), posts=[_post(code="A"), _post(code="B")])

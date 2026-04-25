@@ -32,6 +32,7 @@ class DownloadOptions:
     post_filter: Callable[[Post], bool] | None = None
     latest_stamps: LatestStamps | None = None
     dry_run: bool = False
+    comments_jsonl: bool = False
 
 
 @dataclass(slots=True)
@@ -175,21 +176,29 @@ class Downloader:
             apply_mtime(meta_path, post.taken_at)
 
         if self.options.save_comments and not self.options.dry_run:
-            comments_path = target_dir / f"{stem}_comments.json"
+            ext = "jsonl" if self.options.comments_jsonl else "json"
+            comments_path = target_dir / f"{stem}_comments.{ext}"
             tmp = comments_path.with_name(f"{comments_path.name}.{uuid.uuid4().hex}.tmp")
             try:
                 with tmp.open("w", encoding="utf-8") as f:
-                    f.write("[")
-                    first = True
-                    async for c in self.backend.iter_post_comments(post.pk):
-                        row = asdict(c)
-                        row["created_at"] = c.created_at.isoformat()
-                        if not first:
-                            f.write(",")
-                        f.write("\n  ")
-                        f.write(json.dumps(row, ensure_ascii=False))
-                        first = False
-                    f.write("\n]" if not first else "]")
+                    if self.options.comments_jsonl:
+                        async for c in self.backend.iter_post_comments(post.pk):
+                            row = asdict(c)
+                            row["created_at"] = c.created_at.isoformat()
+                            f.write(json.dumps(row, ensure_ascii=False))
+                            f.write("\n")
+                    else:
+                        f.write("[")
+                        first = True
+                        async for c in self.backend.iter_post_comments(post.pk):
+                            row = asdict(c)
+                            row["created_at"] = c.created_at.isoformat()
+                            if not first:
+                                f.write(",")
+                            f.write("\n  ")
+                            f.write(json.dumps(row, ensure_ascii=False))
+                            first = False
+                        f.write("\n]" if not first else "]")
                 tmp.replace(comments_path)
             except BaseException:
                 tmp.unlink(missing_ok=True)

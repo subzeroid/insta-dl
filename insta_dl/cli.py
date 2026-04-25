@@ -43,6 +43,11 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--fast-update", action="store_true")
     p.add_argument("--latest-stamps", type=Path, default=None)
     p.add_argument("--comments", action="store_true")
+    p.add_argument(
+        "--comments-jsonl",
+        action="store_true",
+        help="write comments as newline-delimited JSON (.jsonl) instead of a JSON array",
+    )
     p.add_argument("--stories", action="store_true")
     p.add_argument("--highlights", action="store_true")
     p.add_argument(
@@ -140,7 +145,8 @@ async def _run(args: argparse.Namespace) -> int:
     options = DownloadOptions(
         dest=args.dest,
         fast_update=args.fast_update,
-        save_comments=args.comments,
+        save_comments=args.comments or args.comments_jsonl,
+        comments_jsonl=args.comments_jsonl,
         include_stories=args.stories,
         include_highlights=args.highlights,
         post_filter=predicate,

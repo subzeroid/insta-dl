@@ -72,7 +72,8 @@ URL parsing is case-insensitive, anchored on the host (`evil.com/instagram.com/.
 
 | Flag | Description |
 |---|---|
-| `--comments` | Save a `<post>_comments.json` sidecar per post, streamed incrementally. |
+| `--comments` | Save a `<post>_comments.json` sidecar per post (single JSON array, streamed incrementally). |
+| `--comments-jsonl` | Save comments as `<post>_comments.jsonl` (newline-delimited JSON, one object per line). Better for posts with hundreds of thousands of comments — streamable line-by-line by tools like `jq -c`. Implies `--comments`. |
 | `--stories` | Also download the user's stories (active 24h slot). Lands in `<dest>/<username>/stories/`. |
 | `--highlights` | Also download the user's saved highlights. Lands in `<dest>/<username>/highlights/<id>_<title>/`. |
 | `--post-filter EXPR` | Restricted-AST predicate evaluated against each post; posts where the expression is falsy are skipped. See [Post filter expressions](#post-filter-expressions) below. |
