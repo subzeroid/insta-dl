@@ -31,6 +31,7 @@ class DownloadOptions:
     include_highlights: bool = False
     post_filter: Callable[[Post], bool] | None = None
     latest_stamps: LatestStamps | None = None
+    dry_run: bool = False
 
 
 class Downloader:
@@ -116,13 +117,16 @@ class Downloader:
             path = target_dir / name
             if path.exists() and self.options.fast_update:
                 continue
+            if self.options.dry_run:
+                log.info("[dry-run] would download → %s", path.name)
+                continue
             log.info("→ %s", path.name)
             await self.backend.download_resource(resource.url, path)
             apply_mtime(path, post.taken_at)
 
         safe_code = safe_component(post.code, fallback="post")
         stem = f"{post.taken_at.strftime('%Y-%m-%d_%H-%M-%S')}_{safe_code}"
-        if self.options.save_metadata:
+        if self.options.save_metadata and not self.options.dry_run:
             meta_path = target_dir / f"{stem}.json"
             tmp_meta = meta_path.with_name(f"{meta_path.name}.{uuid.uuid4().hex}.tmp")
             try:
@@ -133,7 +137,7 @@ class Downloader:
                 raise
             apply_mtime(meta_path, post.taken_at)
 
-        if self.options.save_comments:
+        if self.options.save_comments and not self.options.dry_run:
             comments_path = target_dir / f"{stem}_comments.json"
             tmp = comments_path.with_name(f"{comments_path.name}.{uuid.uuid4().hex}.tmp")
             try:
@@ -167,6 +171,9 @@ class Downloader:
                 path = target_dir / name
                 if path.exists() and self.options.fast_update:
                     continue
+                if self.options.dry_run:
+                    log.info("[dry-run] would download story → %s", path.name)
+                    continue
                 log.info("story → %s", path.name)
                 await self.backend.download_resource(res.url, path)
                 apply_mtime(path, item.taken_at)
@@ -184,6 +191,9 @@ class Downloader:
                     ext = ext_from_url(res.url, default="mp4" if res.is_video else "jpg")
                     path = sub / post_filename(item.pk, item.taken_at, index=index, ext=ext)
                     if path.exists() and self.options.fast_update:
+                        continue
+                    if self.options.dry_run:
+                        log.info("[dry-run] would download highlight → %s", path.name)
                         continue
                     await self.backend.download_resource(res.url, path)
                     apply_mtime(path, item.taken_at)

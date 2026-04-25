@@ -37,7 +37,12 @@ if TYPE_CHECKING:
 class HikerBackend(InstagramBackend):
     name = "hiker"
 
-    def __init__(self, token: str | None = None, max_download_bytes: int = _DEFAULT_MAX_BYTES) -> None:
+    def __init__(
+        self,
+        token: str | None = None,
+        max_download_bytes: int = _DEFAULT_MAX_BYTES,
+        show_progress: bool = True,
+    ) -> None:
         from hikerapi import AsyncClient
 
         resolved = token or os.environ.get("HIKERAPI_TOKEN")
@@ -46,6 +51,7 @@ class HikerBackend(InstagramBackend):
         self._client: AsyncClient = AsyncClient(token=resolved)
         self._http: httpx.AsyncClient | None = None
         self._max_bytes = max_download_bytes
+        self._show_progress = show_progress
 
     def _cdn(self) -> httpx.AsyncClient:
         import httpx
@@ -192,7 +198,7 @@ class HikerBackend(InstagramBackend):
                     written = 0
                     with (
                         part.open("wb") as f,
-                        _progress_bar(dest.name, total) as bar,
+                        _progress_bar(dest.name, total, disable=not self._show_progress) as bar,
                     ):
                         async for chunk in resp.aiter_bytes():
                             written += len(chunk)
@@ -221,7 +227,7 @@ def _parse_total(declared: str | None) -> int | None:
         return None
 
 
-def _progress_bar(name: str, total: int | None) -> Any:
+def _progress_bar(name: str, total: int | None, *, disable: bool = False) -> Any:
     from tqdm import tqdm
 
     return tqdm(
@@ -233,6 +239,7 @@ def _progress_bar(name: str, total: int | None) -> Any:
         leave=False,
         dynamic_ncols=True,
         miniters=1,
+        disable=disable,
     )
 
 

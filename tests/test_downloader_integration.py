@@ -232,6 +232,49 @@ class TestStoriesHighlights:
         assert names == ["1001_Travel", "1002_Travel"]
 
 
+class TestDryRun:
+    async def test_dry_run_skips_media_and_sidecar(self, tmp_path, caplog):
+        backend = FakeBackend(_profile(), posts=[_post(code="A")])
+        opts = DownloadOptions(dest=tmp_path, dry_run=True)
+        with caplog.at_level("INFO", logger="insta_dl"):
+            await Downloader(backend, opts).download_profile("foo")
+        assert backend.downloaded == []  # no CDN fetches
+        assert not list((tmp_path / "foo").glob("*.json"))  # no metadata sidecar
+        assert not list((tmp_path / "foo").glob("*.jpg"))  # no media
+        assert any("[dry-run]" in r.message for r in caplog.records)
+
+    async def test_dry_run_still_evaluates_filter(self, tmp_path, caplog):
+        posts = [
+            _post(code="KEEP"),
+            _post(code="SKIP"),
+        ]
+        posts[0].like_count = 500
+        posts[1].like_count = 5
+        from insta_dl.filter_expr import compile_filter
+
+        opts = DownloadOptions(
+            dest=tmp_path,
+            dry_run=True,
+            post_filter=compile_filter("likes > 100"),
+        )
+        backend = FakeBackend(_profile(), posts=posts)
+        with caplog.at_level("INFO", logger="insta_dl"):
+            await Downloader(backend, opts).download_profile("foo")
+        messages = " ".join(r.message for r in caplog.records)
+        assert "KEEP" in messages
+        assert "SKIP" not in messages
+        assert backend.downloaded == []
+
+    async def test_dry_run_skips_comments_fetch(self, tmp_path):
+        comment = Comment(pk="c1", text="hi", created_at=_ts(),
+                          user_pk="1", user_username="u")
+        backend = FakeBackend(_profile(), posts=[_post(code="A")],
+                              comments={"A": [comment]})
+        opts = DownloadOptions(dest=tmp_path, dry_run=True, save_comments=True)
+        await Downloader(backend, opts).download_profile("foo")
+        assert not list((tmp_path / "foo").glob("*_comments.json"))
+
+
 class TestMakeBackend:
     def test_unknown_backend_raises(self):
         from insta_dl.backends import make_backend

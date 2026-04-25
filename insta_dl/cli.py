@@ -53,6 +53,16 @@ def build_parser() -> argparse.ArgumentParser:
             "Example: --post-filter 'likes > 100 and is_video'"
         ),
     )
+    p.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="log what would be downloaded without writing to disk or hitting the CDN",
+    )
+    p.add_argument(
+        "--no-progress",
+        action="store_true",
+        help="suppress the per-download progress bar (also auto-suppressed on non-TTY)",
+    )
     try:
         import argcomplete
 
@@ -119,7 +129,10 @@ async def _run(args: argparse.Namespace) -> int:
         include_highlights=args.highlights,
         post_filter=predicate,
         latest_stamps=stamps,
+        dry_run=args.dry_run,
     )
+    if args.backend == "hiker":
+        backend_kwargs["show_progress"] = not args.no_progress
 
     async with make_backend(args.backend, **backend_kwargs) as backend:
         downloader = Downloader(backend, options)
