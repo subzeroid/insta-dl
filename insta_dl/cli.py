@@ -65,6 +65,13 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="suppress the per-download progress bar (also auto-suppressed on non-TTY)",
     )
+    p.add_argument(
+        "--max-bytes",
+        type=int,
+        default=None,
+        metavar="N",
+        help="max bytes per downloaded resource (default: 500 MB); oversized downloads are rejected",
+    )
     try:
         import argcomplete
 
@@ -135,6 +142,8 @@ async def _run(args: argparse.Namespace) -> int:
     )
     if args.backend == "hiker":
         backend_kwargs["show_progress"] = not (args.no_progress or args.quiet)
+        if args.max_bytes is not None:
+            backend_kwargs["max_download_bytes"] = args.max_bytes
 
     async with make_backend(args.backend, **backend_kwargs) as backend:
         downloader = Downloader(backend, options)
