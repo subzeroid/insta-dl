@@ -2,12 +2,11 @@ from __future__ import annotations
 
 import logging
 import os
-import uuid
 from typing import TYPE_CHECKING, Any
-from urllib.parse import urlsplit
 
 from ..backend import InstagramBackend
-from ..exceptions import AuthError, BackendError, NotFoundError
+from ..cdn import stream_to_file
+from ..exceptions import AuthError, NotFoundError
 from ..retry import retry_call
 from ._hiker_map import (
     map_comment,
@@ -17,9 +16,6 @@ from ._hiker_map import (
     map_story,
 )
 
-_ALLOWED_HOST_SUFFIXES = (".cdninstagram.com", ".fbcdn.net")
-_ALLOWED_SCHEMES = frozenset({"https"})
-_MAX_REDIRECTS = 10
 _DEFAULT_MAX_BYTES = 500 * 1024 * 1024
 
 log = logging.getLogger("insta_dl.backends.hiker")
@@ -182,100 +178,11 @@ class HikerBackend(InstagramBackend):
         return await retry_call(lambda: self._download_once(url, dest))
 
     async def _download_once(self, url: str, dest: Path) -> Path:
-        dest.parent.mkdir(parents=True, exist_ok=True)
-        part = dest.with_name(f"{dest.name}.{uuid.uuid4().hex}.part")
-        client = self._cdn()
-        current = url
-        try:
-            for _hop in range(_MAX_REDIRECTS):
-                _ensure_allowed(current)
-                async with client.stream("GET", current) as resp:
-                    if resp.is_redirect:
-                        next_url = resp.headers.get("location", "")
-                        if not next_url:
-                            raise BackendError(f"redirect without Location from {_host(current)}")
-                        current = str(resp.url.join(next_url))
-                        continue
-                    resp.raise_for_status()
-                    declared = resp.headers.get("content-length")
-                    if declared is not None:
-                        try:
-                            if int(declared) > self._max_bytes:
-                                raise BackendError(
-                                    f"response Content-Length {declared} exceeds max {self._max_bytes}"
-                                )
-                        except ValueError:
-                            pass
-                    total = _parse_total(declared)
-                    written = 0
-                    with (
-                        part.open("wb") as f,
-                        _progress_bar(dest.name, total, disable=not self._show_progress) as bar,
-                    ):
-                        async for chunk in resp.aiter_bytes():
-                            written += len(chunk)
-                            if written > self._max_bytes:
-                                raise BackendError(
-                                    f"download exceeded max {self._max_bytes} bytes"
-                                )
-                            f.write(chunk)
-                            bar.update(len(chunk))
-                    break
-            else:
-                raise BackendError(f"too many redirects (>{_MAX_REDIRECTS}) for {_host(url)}")
-            part.replace(dest)
-        except BaseException:
-            part.unlink(missing_ok=True)
-            raise
-        return dest
-
-
-def _parse_total(declared: str | None) -> int | None:
-    if declared is None:
-        return None
-    try:
-        return int(declared)
-    except ValueError:
-        return None
-
-
-def _progress_bar(name: str, total: int | None, *, disable: bool = False) -> Any:
-    from tqdm import tqdm
-
-    return tqdm(
-        total=total,
-        unit="B",
-        unit_scale=True,
-        unit_divisor=1024,
-        desc=name,
-        leave=False,
-        dynamic_ncols=True,
-        miniters=1,
-        disable=disable,
-    )
-
-
-def _host(url: str) -> str:
-    raw = (urlsplit(url).hostname or "").lower()
-    # tolerate trailing-dot FQDN (RFC 1034 valid: foo.cdninstagram.com.)
-    return raw.rstrip(".")
-
-
-def _ensure_allowed_host(url: str) -> None:
-    host = _host(url)
-    if not host or not any(host == s.lstrip(".") or host.endswith(s) for s in _ALLOWED_HOST_SUFFIXES):
-        raise BackendError(f"refusing download from disallowed host: {host!r}")
-
-
-def _ensure_allowed_scheme(url: str) -> None:
-    scheme = (urlsplit(url).scheme or "").lower()
-    if scheme not in _ALLOWED_SCHEMES:
-        raise BackendError(f"refusing download with disallowed scheme: {scheme!r}")
-
-
-def _ensure_allowed(url: str) -> None:
-    _ensure_allowed_scheme(url)
-    _ensure_allowed_host(url)
+        return await stream_to_file(
+            self._cdn(), url, dest,
+            max_bytes=self._max_bytes,
+            show_progress=self._show_progress,
+        )
 
 
 def _unwrap(raw: Any) -> dict[str, Any]:

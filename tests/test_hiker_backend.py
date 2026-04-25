@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import pytest
 
-from insta_dl.backends.hiker import _ensure_allowed_host, _host, _split_chunk, _unwrap
+from insta_dl.backends.hiker import _split_chunk, _unwrap
+from insta_dl.cdn import _ensure_allowed_host, _host
 from insta_dl.exceptions import BackendError
 
 

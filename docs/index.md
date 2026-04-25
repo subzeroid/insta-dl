@@ -20,7 +20,7 @@ insta-dl instagram
 
 ## Pick a backend
 
-| | **hiker** (default) | **aiograpi** *(in development)* |
+| | **hiker** (default) | **aiograpi** |
 |---|---|---|
 | Auth | API token | Instagram login + 2FA |
 | Cost | Paid per request, [**100 free requests**](https://hikerapi.com/p/18j4ib4j) to start | Free |
@@ -39,7 +39,7 @@ Full breakdown on the [Backends](backends.md) page.
 
 ## Status
 
-Alpha. Hiker backend is functional end-to-end (251 tests, 96% coverage). aiograpi backend is stubbed pending an upstream sync.
+Alpha. Both hiker and aiograpi backends are functional end-to-end (278 tests, 96% coverage).
 
 ## License & disclaimer
 

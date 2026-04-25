@@ -66,7 +66,7 @@ insta-dl --hiker-token 'your_token_here' instagram
 
 For shells started fresh, add the export to `~/.zshrc` / `~/.bashrc` or use a secret manager (1Password CLI, `pass`, `direnv`).
 
-## Set up aiograpi *(optional, in development)*
+## Set up aiograpi *(optional)*
 
 The aiograpi backend uses your real Instagram credentials. Its transitive Rust deps (pydantic-core, orjson) are **not** pulled in by the default install — opt in with an extra:
 
@@ -74,14 +74,14 @@ The aiograpi backend uses your real Instagram credentials. Its transitive Rust d
 pip install 'instagram-dl[aiograpi]'
 ```
 
-It's stubbed pending an upstream sync — these instructions will work once the integration ships:
+First-run login (creates a session file you can reuse):
 
 ```bash
 insta-dl --backend aiograpi --login YOUR_USER --password YOUR_PASS \
     --session ~/.config/insta-dl/session.json instagram
 ```
 
-The `--session` file is created on first successful login and reused on subsequent runs (so you don't keep typing the password and don't trigger 2FA every time).
+Subsequent runs only need `--session` — insta-dl loads the saved cookies, skips login, and avoids 2FA prompts. If the session has expired and you also pass `--login`/`--password`, it transparently re-logs in and overwrites the file.
 
 ## Verify the install
 

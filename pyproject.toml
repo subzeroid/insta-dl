@@ -119,7 +119,6 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["B017", "ARG"]  # pytest.raises patterns; unused fixture/args are common
-"insta_dl/backends/aiograpi_backend.py" = ["ARG002"]  # stub — method args documented but unused
 
 [tool.mypy]
 python_version = "3.11"

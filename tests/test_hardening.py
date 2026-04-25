@@ -5,12 +5,8 @@ import json
 import httpx
 import pytest
 
-from insta_dl.backends.hiker import (
-    HikerBackend,
-    _ensure_allowed,
-    _ensure_allowed_scheme,
-    _host,
-)
+from insta_dl.backends.hiker import HikerBackend
+from insta_dl.cdn import _ensure_allowed, _ensure_allowed_scheme, _host
 from insta_dl.downloader import Downloader, DownloadOptions
 from insta_dl.exceptions import BackendError
 from insta_dl.filestore import _sanitize, safe_component

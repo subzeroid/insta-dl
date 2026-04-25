@@ -47,13 +47,13 @@ URL parsing is case-insensitive, anchored on the host (`evil.com/instagram.com/.
 |---|---|---|
 | `--hiker-token TOKEN` | env `HIKERAPI_TOKEN` | Required. Get one at [hikerapi.com](https://hikerapi.com/p/18j4ib4j). |
 
-### aiograpi backend *(in development)*
+### aiograpi backend
 
 | Flag | Description |
 |---|---|
-| `--login USER` | Instagram username. |
-| `--password PASS` | Instagram password. |
-| `--session PATH` | Session-file path. Created on first successful login, reused after. |
+| `--login USER` | Instagram username. Required on first run (or whenever the saved session has expired). |
+| `--password PASS` | Instagram password. Required alongside `--login`. |
+| `--session PATH` | Session-file path. Created on first successful login and reused on later runs (so you can drop `--password` and avoid re-triggering 2FA). |
 
 ### Output
 

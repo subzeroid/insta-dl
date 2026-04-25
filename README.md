@@ -99,7 +99,7 @@ Each post gets a `..._comments.json` sidecar streamed to disk.
 
 Pick the one that matches how you want to authenticate.
 
-| | **hiker** (default) | **aiograpi** *(in development)* |
+| | **hiker** (default) | **aiograpi** |
 |---|---|---|
 | Auth | API token | Instagram login + 2FA |
 | Cost | Paid per request, [**100 free requests**](https://hikerapi.com/p/18j4ib4j) to start | Free |
@@ -135,12 +135,11 @@ Hashtag downloads land under `<dest>/#<tag>/`; single-post downloads use the pos
 
 ## Status
 
-This is **alpha**. The hiker backend is functional end-to-end (251 tests, 96% coverage). The aiograpi backend is stubbed pending an upstream sync (and ships behind the `[aiograpi]` extra so its Rust deps don't bloat default installs). CLI flags and output layout are stable; Python API may still shift.
+This is **alpha**. Both backends (hiker, aiograpi) are functional end-to-end (278 tests, 96% coverage). aiograpi ships behind the `[aiograpi]` extra so its Rust deps don't bloat default installs. CLI flags and output layout are stable; Python API may still shift.
 
 What's not yet implemented:
 
-- private profiles requiring login (waiting on aiograpi)
-- `:feed` and `:saved` (account-bound, blocked on aiograpi)
+- `:feed` and `:saved` targets (account-bound, would need session reuse from aiograpi backend)
 
 See the [changelog](CHANGELOG.md) for what landed when, and [contributing](CONTRIBUTING.md) for how to help.
 

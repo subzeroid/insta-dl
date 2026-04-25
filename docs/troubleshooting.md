@@ -31,11 +31,10 @@ If that fails too, regenerate the token in the dashboard.
 
 ### aiograpi: 2FA / login challenges
 
-The aiograpi backend is still stubbed in this version. When it ships, expect:
-
-- First run with `--login` + `--password` triggers a 2FA prompt — enter the code from your authenticator app.
-- The session file written via `--session` is reused; subsequent runs skip 2FA.
-- If Instagram demands a "challenge" (email/SMS code), you'll need to clear it interactively in the Instagram app first.
+- First run with `--login` + `--password` may trigger a 2FA prompt — enter the code from your authenticator app.
+- The session file written via `--session` is reused on later runs; you can drop `--password` and 2FA won't re-trigger.
+- If Instagram demands a "challenge" (email/SMS code), clear it interactively in the Instagram app first, then re-run.
+- If a saved session has expired, pass `--login`/`--password` alongside `--session` — insta-dl will detect the bad cookies and transparently re-login.
 
 ## Network errors
 

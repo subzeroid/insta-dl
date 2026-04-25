@@ -4,7 +4,7 @@ insta-dl talks to Instagram through a swappable backend. Pick the one that match
 
 ## At a glance
 
-| | **hiker** *(default)* | **aiograpi** *(in development)* |
+| | **hiker** *(default)* | **aiograpi** |
 |---|---|---|
 | What it is | Client for the [HikerAPI](https://hikerapi.com/p/18j4ib4j) commercial proxy | Async fork of [instagrapi](https://github.com/subzeroid/instagrapi) (private API) |
 | Authentication | API token (`x-access-key` header) | Instagram username + password + 2FA |
@@ -12,9 +12,9 @@ insta-dl talks to Instagram through a swappable backend. Pick the one that match
 | Account-ban risk | None — your Instagram account is never used | Real, mitigated by session reuse |
 | Stability when Instagram changes APIs | High — managed proxy patches things upstream | Brittle — needs library updates |
 | Private profiles | Whatever HikerAPI exposes | Anything your account can already see |
-| `:feed`, `:saved`, DMs | Not exposed | Available (when implemented) |
+| `:feed`, `:saved`, DMs | Not exposed | Possible but not yet wired into the CLI |
 | Setup time | 30 seconds | Few minutes (login, possibly 2FA, store session) |
-| Status in insta-dl | Functional | Stubbed pending an upstream sync |
+| Status in insta-dl | Functional | Functional |
 
 ## When to pick which
 
@@ -58,7 +58,7 @@ The hiker backend talks to `https://api.hikerapi.com` for metadata and to Instag
 | Hashtag (recent) | `/v2/hashtag/medias/recent` | `iter_hashtag_posts()` |
 | Post comments (paginated) | `/v2/media/comments` | `iter_post_comments()` |
 
-## aiograpi — setup *(in development)*
+## aiograpi — setup
 
 aiograpi and its transitive Rust dependencies (pydantic-core, orjson) are **not** pulled in by a bare `pip install instagram-dl`. Opt in explicitly:
 
@@ -76,9 +76,22 @@ insta-dl --backend aiograpi \
     instagram
 ```
 
-The session file is created on the first successful login and reused after that, so subsequent runs don't need the password (or trigger 2FA prompts).
+The session file is created on the first successful login and reused after that. On subsequent runs you can drop `--password` and pass only `--session` — insta-dl loads the saved cookies and skips the login flow entirely. If the session has expired and you also passed `--login`/`--password`, it transparently re-logs in.
 
-For 2FA, an interactive TOTP prompt will appear during the first login. The aiograpi library supports `client.totp_seed` for non-interactive flows; insta-dl will expose this as an env variable once the backend ships.
+For 2FA, the aiograpi library supports interactive TOTP prompts during login. Once you've logged in successfully and dumped a session, future runs reuse it without re-prompting.
+
+## aiograpi — what's exposed
+
+| Capability | aiograpi method | insta-dl method |
+|---|---|---|
+| Profile by username | `user_info_by_username()` | `get_profile()` |
+| Single post by shortcode | `media_pk_from_code()` + `media_info()` | `get_post_by_shortcode()` |
+| User posts (paginated) | `user_medias_chunk()` | `iter_user_posts()` |
+| User stories | `user_stories()` | `iter_user_stories()` |
+| User highlights | `user_highlights()` | `iter_user_highlights()` |
+| Highlight items | `highlight_info()` | `iter_highlight_items()` |
+| Hashtag (recent) | `hashtag_medias_v1_chunk()` | `iter_hashtag_posts()` |
+| Post comments (paginated) | `media_comments_v1_chunk()` | `iter_post_comments()` |
 
 ## Adding a third backend
 

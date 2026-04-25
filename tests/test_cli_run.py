@@ -119,17 +119,17 @@ class TestMain:
         # No .tmp leftover from atomic rename
         assert not list(tmp_path.glob("*.tmp"))
 
-    def test_aiograpi_emits_friendly_error(self, tmp_path, monkeypatch, capsys):
-        # No fake_make_backend — exercise the real factory + AiograpiBackend stub.
-        # With the extra installed: message mentions "not yet implemented".
-        # Without the extra: message points at `pip install 'instagram-dl[aiograpi]'`.
+    def test_aiograpi_requires_creds_or_session(self, tmp_path, monkeypatch, capsys):
+        # Real factory + AiograpiBackend, no --login/--password/--session.
+        # Must fail fast with a friendly message, no traceback.
+        # If the extra isn't installed, hint points at `pip install`.
         monkeypatch.setattr("sys.argv", [
             "insta-dl", "--backend", "aiograpi", "--dest", str(tmp_path), "foo",
         ])
         rc = cli.main()
         assert rc == 2
         err = capsys.readouterr().err
-        assert "not yet implemented" in err or "not installed" in err
+        assert "session" in err.lower() or "not installed" in err
         assert "Traceback" not in err
 
     def test_keyboard_interrupt_returns_130(self, fake_make_backend, tmp_path, monkeypatch):
