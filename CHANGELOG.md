@@ -2,6 +2,19 @@
 
 All notable changes to insta-dl. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning follows [SemVer](https://semver.org/spec/v2.0.0.html). Entries from 0.1.1 onward are assembled from Conventional Commits by [release-please](https://github.com/googleapis/release-please).
 
+## [0.1.5](https://github.com/subzeroid/insta-dl/compare/v0.1.4...v0.1.5) (2026-04-25)
+
+
+### Fixed
+
+* **hiker:** stories crash when reel is None; highlight items always empty ([0877867](https://github.com/subzeroid/insta-dl/commit/0877867f3aec82c9bea7cdaa87d3f0020bfc60be))
+* **types:** annotate `first` in iter_highlight_items for mypy --strict ([141e3ec](https://github.com/subzeroid/insta-dl/commit/141e3ecf38cc7aa2d4f7ab09a687656db9f73abd))
+
+
+### Documentation
+
+* sync test count + coverage targets to current state ([f7850be](https://github.com/subzeroid/insta-dl/commit/f7850be671e8157bff473944946463a395e904c9))
+
 ## [0.1.4](https://github.com/subzeroid/insta-dl/compare/v0.1.3...v0.1.4) (2026-04-25)
 
 
