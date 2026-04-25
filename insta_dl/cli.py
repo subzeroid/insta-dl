@@ -77,6 +77,13 @@ def build_parser() -> argparse.ArgumentParser:
         metavar="N",
         help="max bytes per downloaded resource (default: 500 MB); oversized downloads are rejected",
     )
+    p.add_argument(
+        "--concurrency",
+        type=int,
+        default=4,
+        metavar="N",
+        help="parallel CDN fetches per post (default: 4). Higher = faster carousel posts, more CDN load.",
+    )
     try:
         import argcomplete
 
@@ -152,6 +159,7 @@ async def _run(args: argparse.Namespace) -> int:
         post_filter=predicate,
         latest_stamps=stamps,
         dry_run=args.dry_run,
+        concurrency=args.concurrency,
     )
     if args.backend == "hiker":
         backend_kwargs["show_progress"] = not (args.no_progress or args.quiet)

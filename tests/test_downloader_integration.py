@@ -275,6 +275,90 @@ class TestDryRun:
         assert not list((tmp_path / "foo").glob("*_comments.json"))
 
 
+class TestConcurrency:
+    async def test_carousel_resources_download_in_parallel(self, tmp_path):
+        """A post with N resources kicks off ~min(N, concurrency) downloads at once.
+
+        We use a tracking backend that increments a 'in_flight' counter while
+        download_resource is awaiting an asyncio.sleep, so we can observe peak
+        concurrency.
+        """
+        import asyncio as _asyncio
+
+        from insta_dl.backend import InstagramBackend
+
+        class TrackingBackend(InstagramBackend):
+            name = "track"
+
+            def __init__(self):
+                self.in_flight = 0
+                self.peak_in_flight = 0
+                self.calls = 0
+
+            async def close(self):
+                pass
+
+            async def download_resource(self, url, dest):
+                self.calls += 1
+                self.in_flight += 1
+                self.peak_in_flight = max(self.peak_in_flight, self.in_flight)
+                try:
+                    await _asyncio.sleep(0.05)
+                    dest.parent.mkdir(parents=True, exist_ok=True)
+                    dest.write_bytes(b"x")
+                    return dest
+                finally:
+                    self.in_flight -= 1
+
+            # Unused but required by ABC
+            async def get_profile(self, username): ...
+            async def get_post_by_shortcode(self, code): ...
+            async def iter_user_posts(self, pk):
+                if False:
+                    yield
+            async def iter_user_stories(self, pk):
+                if False:
+                    yield
+            async def iter_user_highlights(self, pk):
+                if False:
+                    yield
+            async def iter_highlight_items(self, pk):
+                if False:
+                    yield
+            async def iter_hashtag_posts(self, tag):
+                if False:
+                    yield
+            async def iter_post_comments(self, pk):
+                if False:
+                    yield
+
+        backend = TrackingBackend()
+        post = _post(
+            code="CAROUSEL",
+            resources=[
+                MediaResource(url=f"https://cdn/{i}.jpg", is_video=False)
+                for i in range(8)
+            ],
+        )
+        opts = DownloadOptions(dest=tmp_path, concurrency=4)
+        d = Downloader(backend, opts)
+        await d._save_post(post, tmp_path / "out")
+        assert backend.calls == 8
+        assert backend.peak_in_flight >= 2, "at least some parallelism expected"
+        assert backend.peak_in_flight <= 4, f"capped at concurrency=4, saw {backend.peak_in_flight}"
+
+    async def test_concurrency_one_serializes(self, tmp_path):
+        backend = FakeBackend(_profile(), posts=[
+            _post(code="C", resources=[
+                MediaResource(url=f"https://cdn/{i}.jpg", is_video=False)
+                for i in range(3)
+            ]),
+        ])
+        opts = DownloadOptions(dest=tmp_path, concurrency=1)
+        await Downloader(backend, opts).download_profile("foo")
+        assert len(backend.downloaded) == 3
+
+
 class TestCommentsJsonl:
     async def test_jsonl_format_writes_one_object_per_line(self, tmp_path):
         c1 = Comment(pk="c1", text="a", created_at=_ts(),

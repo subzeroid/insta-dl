@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 import uuid
@@ -33,6 +34,7 @@ class DownloadOptions:
     latest_stamps: LatestStamps | None = None
     dry_run: bool = False
     comments_jsonl: bool = False
+    concurrency: int = 4
 
 
 @dataclass(slots=True)
@@ -58,6 +60,7 @@ class Downloader:
         self.backend = backend
         self.options = options
         self.stats = RunStats()
+        self._sem = asyncio.Semaphore(max(1, options.concurrency))
 
     def _keep(self, post: Post) -> bool:
         if self.options.post_filter is None:
@@ -138,6 +141,7 @@ class Downloader:
     async def _save_post(self, post: Post, target_dir: Path) -> None:
         downloaded_any = False
         all_existed = True
+        tasks: list[asyncio.Task[None]] = []
         for index, resource in enumerate(post.resources):
             if not resource.url:
                 log.warning("empty URL for resource %d in %s — schema drift?", index, post.code)
@@ -152,9 +156,15 @@ class Downloader:
                 log.info("[dry-run] would download → %s", path.name)
                 downloaded_any = True
                 continue
-            log.info("→ %s", path.name)
-            await self.backend.download_resource(resource.url, path)
-            apply_mtime(path, post.taken_at)
+            tasks.append(asyncio.create_task(self._download_one(resource.url, path, post.taken_at)))
+
+        if tasks:
+            try:
+                await asyncio.gather(*tasks)
+            except BaseException:
+                for t in tasks:
+                    t.cancel()
+                raise
             downloaded_any = True
 
         if downloaded_any:
@@ -243,6 +253,12 @@ class Downloader:
                         continue
                     await self.backend.download_resource(res.url, path)
                     apply_mtime(path, item.taken_at)
+
+    async def _download_one(self, url: str, path: Path, taken_at: datetime) -> None:
+        async with self._sem:
+            log.info("→ %s", path.name)
+            await self.backend.download_resource(url, path)
+            apply_mtime(path, taken_at)
 
     def _cutoff_for(self, username: str) -> datetime | None:
         if not self.options.fast_update or self.options.latest_stamps is None:

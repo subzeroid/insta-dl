@@ -79,6 +79,8 @@ URL parsing is case-insensitive, anchored on the host (`evil.com/instagram.com/.
 | `--post-filter EXPR` | Restricted-AST predicate evaluated against each post; posts where the expression is falsy are skipped. See [Post filter expressions](#post-filter-expressions) below. |
 | `--dry-run` | Walk the iteration as if downloading, but skip CDN fetches and sidecar writes. Logs `[dry-run] would download → <filename>` per resource. Useful for sanity-checking `--post-filter` expressions. Metadata API calls still happen because filters are evaluated against full `Post` records. |
 | `--no-progress` | Suppress the per-download progress bar even on a TTY. (Non-TTY destinations like CI logs auto-suppress regardless.) |
+| `--max-bytes N` | Override the 500 MB per-resource cap. Oversized downloads are still rejected before bytes hit disk. |
+| `--concurrency N` | Parallel CDN fetches *within a single post* (default: `4`). Carousel posts with many photos finish faster; cross-post processing is still sequential. |
 
 ### Logging
 
