@@ -2,6 +2,21 @@
 
 All notable changes to insta-dl. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning follows [SemVer](https://semver.org/spec/v2.0.0.html). Entries from 0.1.1 onward are assembled from Conventional Commits by [release-please](https://github.com/googleapis/release-please).
 
+## [0.1.4](https://github.com/subzeroid/insta-dl/compare/v0.1.3...v0.1.4) (2026-04-25)
+
+
+### Added
+
+* --comments-jsonl alternative format for the comments sidecar ([cb9f41b](https://github.com/subzeroid/insta-dl/commit/cb9f41be8eeaed24104678d724305ed884e5c9c3))
+* **cli:** --max-bytes flag to override the 500 MB download cap ([a6a2278](https://github.com/subzeroid/insta-dl/commit/a6a2278805f679810d6766408c399bfad2137498))
+* info:USERNAME target prints profile JSON to stdout ([d63d183](https://github.com/subzeroid/insta-dl/commit/d63d183df8df32dbb63e0ea00dcf36c37c199bf8))
+* parallel resource downloads within a post ([a74c97a](https://github.com/subzeroid/insta-dl/commit/a74c97af0acc3a59ad94601ab9a7bfaed4036907))
+
+
+### Documentation
+
+* examples directory with three runnable Python-API scripts ([21c36d3](https://github.com/subzeroid/insta-dl/commit/21c36d385b76bdb5148a323133dcd58ceb835fc7))
+
 ## [0.1.3](https://github.com/subzeroid/insta-dl/compare/v0.1.2...v0.1.3) (2026-04-25)
 
 
