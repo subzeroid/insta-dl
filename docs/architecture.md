@@ -74,7 +74,7 @@ The arrow points down: each layer depends only on what's below it. Backends neve
 - HTTP path → tested with `httpx.MockTransport`. Covers SSRF rejection, scheme-downgrade rejection, redirect-loop limit, `Content-Length` overflow, streaming overflow, missing `Location`, `.part` cleanup, concurrent same-dest writes.
 - `Downloader` integration → `FakeBackend` driving the full facade, checking file layout, mtime, sidecar JSON, comments streaming, fast-update cutoff, untrusted-username sanitization.
 
-242 tests, 95% coverage. The 5% missed: `__main__.py` trampoline (4 lines), abstract `...` placeholders, two `if __name__ == "__main__"` lines, a few defensive-error branches.
+251 tests, 96% coverage. The remaining ~4% missed: `__main__.py` trampoline (4 lines), abstract `...` placeholders, two `if __name__ == "__main__"` lines, a few defensive-error branches in the streaming download path.
 
 ## What changes when the schema drifts
 

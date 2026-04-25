@@ -39,7 +39,7 @@ Full breakdown on the [Backends](backends.md) page.
 
 ## Status
 
-Alpha. Hiker backend is functional end-to-end (242 tests, 95% coverage). aiograpi backend is stubbed pending an upstream sync.
+Alpha. Hiker backend is functional end-to-end (251 tests, 96% coverage). aiograpi backend is stubbed pending an upstream sync.
 
 ## License & disclaimer
 
