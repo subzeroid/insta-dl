@@ -130,7 +130,7 @@ class HikerBackend(InstagramBackend):
         reels = body.get("reels") or {}
         reel: dict[str, Any] = reels.get(f"highlight:{highlight_pk}") or {}
         if not reel and reels:
-            first = next(iter(reels.values()), {})
+            first: Any = next(iter(reels.values()), {})
             if isinstance(first, dict):
                 reel = first
         items = reel.get("items") or body.get("items") or []
