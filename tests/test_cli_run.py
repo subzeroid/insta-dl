@@ -140,3 +140,28 @@ class TestMain:
         monkeypatch.setattr("sys.argv", ["insta-dl", "--dest", str(tmp_path), "foo"])
         rc = cli.main()
         assert rc == 130
+
+    def test_invalid_post_filter_returns_2(self, fake_make_backend, tmp_path, monkeypatch, capsys):
+        monkeypatch.setattr("sys.argv", [
+            "insta-dl", "--dest", str(tmp_path), "--post-filter", "__import__('os')", "foo",
+        ])
+        rc = cli.main()
+        assert rc == 2
+        err = capsys.readouterr().err
+        assert "invalid --post-filter" in err
+
+    def test_max_bytes_passed_to_backend(self, fake_make_backend, tmp_path, monkeypatch):
+        monkeypatch.setattr("sys.argv", [
+            "insta-dl", "--dest", str(tmp_path), "--max-bytes", "1024", "foo",
+        ])
+        rc = cli.main()
+        assert rc == 0
+        assert fake_make_backend[0].kwargs["max_download_bytes"] == 1024
+
+    def test_verbose_flag_runs(self, fake_make_backend, tmp_path, monkeypatch):
+        monkeypatch.setattr("sys.argv", ["insta-dl", "--dest", str(tmp_path), "-v", "foo"])
+        assert cli.main() == 0
+
+    def test_quiet_flag_runs(self, fake_make_backend, tmp_path, monkeypatch):
+        monkeypatch.setattr("sys.argv", ["insta-dl", "--dest", str(tmp_path), "-q", "foo"])
+        assert cli.main() == 0

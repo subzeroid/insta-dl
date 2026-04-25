@@ -443,3 +443,61 @@ class TestMakeBackend:
 
         with pytest.raises(ValueError, match="unknown backend"):
             make_backend("nonexistent")
+
+
+class TestPostFilterRaises:
+    async def test_filter_exception_skips_post_and_logs(self, tmp_path, caplog):
+        def boom(_post):
+            raise RuntimeError("kaboom")
+
+        backend = FakeBackend(_profile(), posts=[_post(code="A")])
+        opts = DownloadOptions(dest=tmp_path, post_filter=boom)
+        with caplog.at_level("WARNING", logger="insta_dl"):
+            await Downloader(backend, opts).download_profile("foo")
+        assert backend.downloaded == []
+        assert any("post-filter raised" in r.message and "kaboom" in r.message
+                   for r in caplog.records)
+
+
+class TestStandaloneStoriesAndHighlights:
+    async def test_download_stories_only(self, tmp_path):
+        story = StoryItem(pk="s1", taken_at=_ts(), media_type=MediaType.PHOTO,
+                          owner_pk="42", owner_username="foo",
+                          resources=[MediaResource(url="https://cdn/s.jpg", is_video=False)])
+        backend = FakeBackend(_profile(), stories=[story])
+        await Downloader(backend, DownloadOptions(dest=tmp_path)).download_stories("foo")
+        assert (tmp_path / "foo" / "stories" / "2026-04-21_16-04-15_s1.jpg").exists()
+
+    async def test_download_highlights_only(self, tmp_path):
+        hl = Highlight(pk="100", title="Trip", owner_pk="42")
+        item = StoryItem(pk="i1", taken_at=_ts(), media_type=MediaType.PHOTO,
+                         owner_pk="42", owner_username="foo",
+                         resources=[MediaResource(url="https://cdn/h.jpg", is_video=False)])
+        backend = FakeBackend(_profile(), highlights=[(hl, [item])])
+        await Downloader(backend, DownloadOptions(dest=tmp_path)).download_highlights("foo")
+        assert (tmp_path / "foo" / "highlights" / "100_Trip" / "2026-04-21_16-04-15_i1.jpg").exists()
+
+
+class TestEmptyResourceUrls:
+    async def test_story_with_empty_url_warns_and_skips(self, tmp_path, caplog):
+        story = StoryItem(pk="s1", taken_at=_ts(), media_type=MediaType.PHOTO,
+                          owner_pk="42", owner_username="foo",
+                          resources=[MediaResource(url="", is_video=False)])
+        backend = FakeBackend(_profile(), stories=[story])
+        opts = DownloadOptions(dest=tmp_path, include_stories=True)
+        with caplog.at_level("WARNING", logger="insta_dl"):
+            await Downloader(backend, opts).download_profile("foo")
+        assert backend.downloaded == []
+        assert any("empty URL for story resource" in r.message for r in caplog.records)
+
+    async def test_highlight_with_empty_url_warns_and_skips(self, tmp_path, caplog):
+        hl = Highlight(pk="100", title="Trip", owner_pk="42")
+        item = StoryItem(pk="i1", taken_at=_ts(), media_type=MediaType.PHOTO,
+                         owner_pk="42", owner_username="foo",
+                         resources=[MediaResource(url="", is_video=False)])
+        backend = FakeBackend(_profile(), highlights=[(hl, [item])])
+        opts = DownloadOptions(dest=tmp_path, include_highlights=True)
+        with caplog.at_level("WARNING", logger="insta_dl"):
+            await Downloader(backend, opts).download_profile("foo")
+        assert backend.downloaded == []
+        assert any("empty URL for highlight resource" in r.message for r in caplog.records)
