@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "instagram-dl"
-version = "0.1.3"
+version = "0.1.4"
 description = "Async Instagram downloader CLI — profiles, posts, reels, stories, highlights, hashtags, comments. Pluggable backends (HikerAPI / aiograpi)."
 readme = "README.md"
 license = { file = "LICENSE" }
