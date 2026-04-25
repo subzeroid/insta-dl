@@ -275,6 +275,64 @@ class TestDryRun:
         assert not list((tmp_path / "foo").glob("*_comments.json"))
 
 
+class TestRunStats:
+    async def test_summary_logs_at_end_of_profile(self, tmp_path, caplog):
+        backend = FakeBackend(_profile(), posts=[_post(code="A"), _post(code="B")])
+        opts = DownloadOptions(dest=tmp_path)
+        with caplog.at_level("INFO", logger="insta_dl"):
+            await Downloader(backend, opts).download_profile("foo")
+        # Summary line is emitted at the end with the username.
+        summary_lines = [r.message for r in caplog.records if r.message.startswith("profile foo:")]
+        assert summary_lines, "expected a 'profile foo: …' summary line"
+        assert "downloaded 2" in summary_lines[-1]
+
+    async def test_summary_counts_filtered_and_existing(self, tmp_path, caplog):
+        from insta_dl.filter_expr import compile_filter
+
+        # Three posts: 1 keeps & gets new download, 1 keeps but already on disk,
+        # 1 filtered out.
+        keep_new = _post(code="NEW")
+        keep_existing = _post(code="HAVE")
+        filtered = _post(code="SKIP")
+        keep_new.like_count = 200
+        keep_existing.like_count = 200
+        filtered.like_count = 5
+
+        # Pre-create the file so HAVE is "already on disk" with --fast-update.
+        (tmp_path / "foo").mkdir(parents=True)
+        existing_path = tmp_path / "foo" / "2026-04-21_16-04-15_HAVE.jpg"
+        existing_path.write_bytes(b"x")
+
+        opts = DownloadOptions(
+            dest=tmp_path,
+            fast_update=True,
+            post_filter=compile_filter("likes > 100"),
+        )
+        backend = FakeBackend(_profile(), posts=[keep_new, keep_existing, filtered])
+        with caplog.at_level("INFO", logger="insta_dl"):
+            await Downloader(backend, opts).download_profile("foo")
+        summary = next(r.message for r in caplog.records if r.message.startswith("profile foo:"))
+        assert "downloaded 1" in summary
+        assert "filtered 1" in summary
+        assert "already on disk 1" in summary
+
+    async def test_dry_run_summary_says_would_download(self, tmp_path, caplog):
+        backend = FakeBackend(_profile(), posts=[_post(code="A")])
+        opts = DownloadOptions(dest=tmp_path, dry_run=True)
+        with caplog.at_level("INFO", logger="insta_dl"):
+            await Downloader(backend, opts).download_profile("foo")
+        summary = next(r.message for r in caplog.records if r.message.startswith("profile foo:"))
+        assert "would download" in summary
+
+    async def test_hashtag_emits_summary(self, tmp_path, caplog):
+        backend = FakeBackend(_profile(), posts=[_post(code="A"), _post(code="B")])
+        opts = DownloadOptions(dest=tmp_path)
+        with caplog.at_level("INFO", logger="insta_dl"):
+            await Downloader(backend, opts).download_hashtag("sunset")
+        summary = next(r.message for r in caplog.records if r.message.startswith("#sunset:"))
+        assert "downloaded 2" in summary
+
+
 class TestMakeBackend:
     def test_unknown_backend_raises(self):
         from insta_dl.backends import make_backend

@@ -34,21 +34,44 @@ class DownloadOptions:
     dry_run: bool = False
 
 
+@dataclass(slots=True)
+class RunStats:
+    """Counts emitted at the end of every download_profile / download_hashtag."""
+
+    new_posts: int = 0
+    skipped_filter: int = 0
+    skipped_existing: int = 0
+
+    def summary(self, *, dry_run: bool = False) -> str:
+        verb = "would download" if dry_run else "downloaded"
+        parts = [f"{verb} {self.new_posts}"]
+        if self.skipped_filter:
+            parts.append(f"filtered {self.skipped_filter}")
+        if self.skipped_existing:
+            parts.append(f"already on disk {self.skipped_existing}")
+        return " · ".join(parts)
+
+
 class Downloader:
     def __init__(self, backend: InstagramBackend, options: DownloadOptions) -> None:
         self.backend = backend
         self.options = options
+        self.stats = RunStats()
 
     def _keep(self, post: Post) -> bool:
         if self.options.post_filter is None:
             return True
         try:
-            return self.options.post_filter(post)
+            keep = self.options.post_filter(post)
         except Exception as exc:
             log.warning("post-filter raised on %s: %s — skipping", post.code, exc)
             return False
+        if not keep:
+            self.stats.skipped_filter += 1
+        return keep
 
     async def download_profile(self, username: str) -> None:
+        before = _snapshot(self.stats)
         profile = await self.backend.get_profile(username)
         target_dir = self.options.dest / safe_component(profile.username, fallback=profile.pk)
         target_dir.mkdir(parents=True, exist_ok=True)
@@ -78,6 +101,8 @@ class Downloader:
         if self.options.include_highlights:
             await self._download_highlights(profile.pk, target_dir / "highlights")
 
+        log.info("profile %s: %s", profile.username, _delta(self.stats, before).summary(dry_run=self.options.dry_run))
+
     async def download_post(self, shortcode: str) -> None:
         post = await self.backend.get_post_by_shortcode(shortcode)
         owner_raw = post.owner_username or post.owner_pk
@@ -100,14 +125,18 @@ class Downloader:
         await self._download_highlights(profile.pk, user_dir / "highlights")
 
     async def download_hashtag(self, tag: str) -> None:
+        before = _snapshot(self.stats)
         target_dir = self.options.dest / f"#{safe_component(tag, fallback='tag')}"
         target_dir.mkdir(parents=True, exist_ok=True)
         async for post in self.backend.iter_hashtag_posts(tag):
             if not self._keep(post):
                 continue
             await self._save_post(post, target_dir)
+        log.info("#%s: %s", tag, _delta(self.stats, before).summary(dry_run=self.options.dry_run))
 
     async def _save_post(self, post: Post, target_dir: Path) -> None:
+        downloaded_any = False
+        all_existed = True
         for index, resource in enumerate(post.resources):
             if not resource.url:
                 log.warning("empty URL for resource %d in %s — schema drift?", index, post.code)
@@ -117,12 +146,20 @@ class Downloader:
             path = target_dir / name
             if path.exists() and self.options.fast_update:
                 continue
+            all_existed = False
             if self.options.dry_run:
                 log.info("[dry-run] would download → %s", path.name)
+                downloaded_any = True
                 continue
             log.info("→ %s", path.name)
             await self.backend.download_resource(resource.url, path)
             apply_mtime(path, post.taken_at)
+            downloaded_any = True
+
+        if downloaded_any:
+            self.stats.new_posts += 1
+        elif all_existed and post.resources:
+            self.stats.skipped_existing += 1
 
         safe_code = safe_component(post.code, fallback="post")
         stem = f"{post.taken_at.strftime('%Y-%m-%d_%H-%M-%S')}_{safe_code}"
@@ -202,6 +239,22 @@ class Downloader:
         if not self.options.fast_update or self.options.latest_stamps is None:
             return None
         return self.options.latest_stamps.get_post_timestamp(username)
+
+
+def _snapshot(s: RunStats) -> RunStats:
+    return RunStats(
+        new_posts=s.new_posts,
+        skipped_filter=s.skipped_filter,
+        skipped_existing=s.skipped_existing,
+    )
+
+
+def _delta(now: RunStats, before: RunStats) -> RunStats:
+    return RunStats(
+        new_posts=now.new_posts - before.new_posts,
+        skipped_filter=now.skipped_filter - before.skipped_filter,
+        skipped_existing=now.skipped_existing - before.skipped_existing,
+    )
 
 
 def _strip_query(url: str) -> str:

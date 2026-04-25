@@ -83,6 +83,18 @@ URL parsing is case-insensitive, anchored on the host (`evil.com/instagram.com/.
 | Flag | Description |
 |---|---|
 | `-v`, `--verbose` | DEBUG-level logging. Shows HTTP requests, redirect chains, schema-drift warnings. |
+| `-q`, `--quiet` | Warnings and errors only. Also suppresses the per-download progress bar. Mutually exclusive with `-v`. |
+
+A summary line is emitted at the end of every profile / hashtag run:
+
+```
+profile instagram: downloaded 8 · filtered 12 · already on disk 4
+```
+
+Counts:
+- **downloaded** — posts where at least one resource was newly written (or, with `--dry-run`, would be).
+- **filtered** — posts excluded by `--post-filter`.
+- **already on disk** — posts where every resource was already present and `--fast-update` skipped them.
 
 ### Help
 

@@ -31,7 +31,9 @@ def build_parser() -> argparse.ArgumentParser:
         help="Targets: username, #hashtag, post:SHORTCODE, or instagram.com URL",
     )
     p.add_argument("-V", "--version", action="version", version=f"%(prog)s {__version__}")
-    p.add_argument("-v", "--verbose", action="store_true")
+    verbosity = p.add_mutually_exclusive_group()
+    verbosity.add_argument("-v", "--verbose", action="store_true", help="DEBUG-level logging")
+    verbosity.add_argument("-q", "--quiet", action="store_true", help="warnings and errors only")
     p.add_argument("--backend", choices=["hiker", "aiograpi"], default="hiker")
     p.add_argument("--dest", type=Path, default=Path())
     p.add_argument("--hiker-token", default=None, help="HikerAPI token (or HIKERAPI_TOKEN env)")
@@ -132,7 +134,7 @@ async def _run(args: argparse.Namespace) -> int:
         dry_run=args.dry_run,
     )
     if args.backend == "hiker":
-        backend_kwargs["show_progress"] = not args.no_progress
+        backend_kwargs["show_progress"] = not (args.no_progress or args.quiet)
 
     async with make_backend(args.backend, **backend_kwargs) as backend:
         downloader = Downloader(backend, options)
@@ -146,10 +148,13 @@ async def _run(args: argparse.Namespace) -> int:
 
 def main() -> int:
     args = build_parser().parse_args()
-    logging.basicConfig(
-        level=logging.DEBUG if args.verbose else logging.INFO,
-        format="%(message)s",
-    )
+    if args.verbose:
+        level = logging.DEBUG
+    elif args.quiet:
+        level = logging.WARNING
+    else:
+        level = logging.INFO
+    logging.basicConfig(level=level, format="%(message)s")
     from .exceptions import InstaDlError
 
     try:
