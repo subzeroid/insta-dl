@@ -1,72 +1,45 @@
 # Changelog
 
-All notable changes to insta-dl. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning follows [SemVer](https://semver.org/spec/v2.0.0.html).
-
-## [0.1.1](https://github.com/subzeroid/insta-dl/compare/instagram-dl-v0.1.0...instagram-dl-v0.1.1) (2026-04-24)
-
-
-### Added
-
-* --version, --post-filter, shell completions, retry/backoff, strict types ([d43bcba](https://github.com/subzeroid/insta-dl/commit/d43bcbabf6c394ce69834430425086d9d987b59e))
-* initial release (0.0.1) — async Instagram downloader CLI ([7a307c5](https://github.com/subzeroid/insta-dl/commit/7a307c505acea5bedb6a4196a8785f34209652e1))
-* progress bar for CDN downloads ([b21e412](https://github.com/subzeroid/insta-dl/commit/b21e4121562ef3be2f87e86c8c7e16469f0437a0))
-
-
-### Changed
-
-* make aiograpi an optional extra ([92ed667](https://github.com/subzeroid/insta-dl/commit/92ed66726b9ea6466d0ada0b12a5285c2dd14e7f))
-
-
-### Documentation
-
-* MkDocs Material site (8 pages) with GH Pages deploy workflow. ([7a307c5](https://github.com/subzeroid/insta-dl/commit/7a307c505acea5bedb6a4196a8785f34209652e1))
-* **readme:** add demo GIF ([568feea](https://github.com/subzeroid/insta-dl/commit/568feeaeae08bc1dea1f43f45f54e0aa0c3cfa2c))
-* **readme:** clarify that aiograpi backend is an opt-in extra ([a02f6a6](https://github.com/subzeroid/insta-dl/commit/a02f6a65ac44c00435126a23533385045865c699))
-* **readme:** link HikerAPI signup and free-tier note ([b0b2d7a](https://github.com/subzeroid/insta-dl/commit/b0b2d7a9e5dae205e8e7d111664769c8382a1200))
+All notable changes to insta-dl. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning follows [SemVer](https://semver.org/spec/v2.0.0.html). Entries from 0.1.1 onward are assembled from Conventional Commits by [release-please](https://github.com/googleapis/release-please).
 
 ## [Unreleased]
 
+## [0.1.1] — 2026-04-24
+
 ### Added
 
-- Download progress bar via `tqdm` on every CDN fetch. Shows filename, bytes transferred, total (when Content-Length is declared), and rate. Writes to stderr so piped stdout is unaffected; auto-suppressed on non-TTY.
+- Download progress bar via `tqdm` on every CDN fetch. Shows filename, bytes transferred, total (when Content-Length is declared), and transfer rate. Writes to stderr; tqdm auto-suppresses on non-TTY so CI logs stay readable.
 
 ### Infra
 
-- `pr-title.yml`: validates that pull request titles follow Conventional Commits (`feat:`, `fix:`, `refactor:`, `docs:`, ...). Keeps release-please's input clean so every merged PR maps to the correct CHANGELOG section.
+- `pr-title.yml` validates that pull request titles follow Conventional Commits, keeping release-please's input clean.
+- `.release-please-config.json`: `include-component-in-tag: false` so release-please produces plain `vX.Y.Z` tags (the tag pattern both `release.yml` and `docker.yml` listen on).
 
-## [0.1.0](https://github.com/subzeroid/insta-dl/compare/v0.0.2...v0.1.0) (2026-04-24)
+[0.1.1]: https://github.com/subzeroid/insta-dl/releases/tag/v0.1.1
 
-
-### Features
-
-* --version, --post-filter, shell completions, retry/backoff, strict types ([d43bcba](https://github.com/subzeroid/insta-dl/commit/d43bcbabf6c394ce69834430425086d9d987b59e))
-
-
-### Documentation
-
-* **readme:** add demo GIF ([568feea](https://github.com/subzeroid/insta-dl/commit/568feeaeae08bc1dea1f43f45f54e0aa0c3cfa2c))
-
-## [Unreleased]
+## [0.1.0] — 2026-04-24
 
 ### Added
 
 - `--version` / `-V` flag prints the installed version.
-- `--post-filter EXPR` now works. Predicate expressions are parsed into a restricted AST (no attribute access, subscription, calls, or lambdas) and evaluated against each post against a sealed namespace. Names: `likes`, `comments`, `caption`, `code`, `username`, `location`, `taken_at`, `year`/`month`/`day`, `is_video`/`is_photo`/`is_album`.
-- Shell completions via `argcomplete` (documented in `docs/cli-reference.md`). `insta-dl --<TAB>` after `eval "$(register-python-argcomplete insta-dl)"`.
+- `--post-filter EXPR` implemented. Predicate expressions are parsed into a restricted AST (no attribute access, subscription, calls, or lambdas) and evaluated against each post with `__builtins__` stripped. Names: `likes`, `comments`, `caption`, `code`, `username`, `location`, `taken_at`, `year`/`month`/`day`, `is_video`/`is_photo`/`is_album`.
+- Shell completions via `argcomplete` (documented in `docs/cli-reference.md`). Activate with `eval "$(register-python-argcomplete insta-dl)"`.
 - Retry/backoff for transient failures: HTTP 408/425/429/5xx and `httpx.TransportError` are retried with exponential backoff + jitter, honoring `Retry-After`. Applies to every HikerAPI API call and to CDN downloads.
 - Python 3.11 / 3.12 / 3.13 / 3.14 tested in CI matrix.
+- `insta_dl/py.typed` marker — PEP 561 compliance so downstream type-checkers (mypy, pyright) pick up our annotations.
+- Sigstore artifact attestations on PyPI uploads.
 
 ### Changed
 
 - **`aiograpi` is now an optional extra.** `pip install instagram-dl` installs only what the default `hiker` backend needs; users who want aiograpi run `pip install 'instagram-dl[aiograpi]'`. Drops ~40 MB from the default install (pydantic-core, orjson, moviepy) and unblocks Python 3.14 (upstream Rust deps don't build on 3.14 yet). Selecting `--backend aiograpi` without the extra fails fast with a clear install hint.
 - `mypy` config flipped to `strict = true`; `ruff` rule set expanded to include `TCH`, `PTH`, `ARG`, `RET`, `C4`.
-- `insta_dl.__version__` is now read from installed package metadata (`importlib.metadata.version`) instead of being hardcoded. One source of truth in `pyproject.toml`.
+- `insta_dl.__version__` is read from installed package metadata (`importlib.metadata.version`) instead of being hardcoded — one source of truth in `pyproject.toml`.
 
 ### Infra
 
-- `release-please` wired up (`.github/workflows/release-please.yml`): every merge to `main` updates a standing "chore(main): release X.Y.Z" PR with the next version + CHANGELOG entry derived from Conventional Commits. Merging that PR tags the release, which triggers the existing `release.yml` / `docker.yml` pipelines.
+- `release-please` wired up (`.github/workflows/release-please.yml`): every merge to `main` updates a standing "chore(main): release X.Y.Z" PR with the next version + CHANGELOG entry derived from Conventional Commits.
 
-[Unreleased]: https://github.com/subzeroid/insta-dl/compare/v0.0.2...HEAD
+[0.1.0]: https://github.com/subzeroid/insta-dl/releases/tag/v0.1.0
 
 ## [0.0.2] — 2026-04-24
 
@@ -81,7 +54,7 @@ All notable changes to insta-dl. Format follows [Keep a Changelog](https://keepa
 
 ### Changed
 
-- Release pipeline is now fully automated via GitHub Actions + PyPI trusted publishing; a `v*` tag push builds, publishes, and attaches artifacts to the GitHub release.
+- Release pipeline automated via GitHub Actions + PyPI trusted publishing; a `v*` tag push builds, publishes, and attaches artifacts to the GitHub release.
 - README badges now point at live PyPI/Codecov/Actions data instead of hardcoded shields.
 - README links directly to the HikerAPI free-tier signup.
 
@@ -104,13 +77,7 @@ All notable changes to insta-dl. Format follows [Keep a Changelog](https://keepa
 
 ### Stubbed
 
-- `AiograpiBackend` — interface defined, methods raise `NotImplementedError` pending an upstream sync.
-- `--post-filter` — parsed but ignored; planned implementation uses AST-restricted compile (no raw `eval`).
-
-### Known limitations
-
-- No retry/backoff on 429 / 5xx / connection reset (relies on hikerapi defaults).
-- No support for `:feed`, `:saved`, or DMs (account-bound, blocked on aiograpi).
-- Comments sidecar is a single JSON array — fine for posts with thousands of comments, may want JSONL for hundreds of thousands.
+- `AiograpiBackend` — interface defined, methods raise `NotImplementedError` pending an upstream sync (made an opt-in extra in 0.1.0).
 
 [0.0.1]: https://github.com/subzeroid/insta-dl/releases/tag/v0.0.1
+[Unreleased]: https://github.com/subzeroid/insta-dl/compare/v0.1.1...HEAD
