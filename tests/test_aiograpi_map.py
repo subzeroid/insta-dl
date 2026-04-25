@@ -2,6 +2,10 @@
 
 Use SimpleNamespace as a stand-in: mappers only access attributes, not
 pydantic-specific machinery, so duck-typing is fine for unit testing.
+
+Mappers themselves don't import aiograpi (only typing-only imports), so
+they're testable without the optional extra installed. Backend tests
+(test_aiograpi_backend.py) need the extra.
 """
 from __future__ import annotations
 

@@ -22,7 +22,13 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           cache: pip
+      # aiograpi extra pulls Rust-built deps (pydantic-core) that don't
+      # ship wheels for 3.14 yet; skip it there. Backend tests for
+      # aiograpi use `pytest.importorskip("aiograpi")` and self-skip.
+      - run: pip install -e '.[dev,aiograpi]'
+        if: matrix.python-version != '3.14'
       - run: pip install -e '.[dev]'
+        if: matrix.python-version == '3.14'
       - run: pytest --cov=insta_dl --cov-report=term-missing --cov-report=xml --cov-fail-under=93
       - uses: codecov/codecov-action@v6
         if: matrix.python-version == '3.12'

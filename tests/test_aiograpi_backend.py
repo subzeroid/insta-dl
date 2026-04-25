@@ -12,8 +12,13 @@ from typing import Any
 
 import pytest
 
-from insta_dl.backends.aiograpi_backend import AiograpiBackend
-from insta_dl.exceptions import AuthError
+# AiograpiBackend's __init__ tries to import aiograpi; on Python versions
+# where the upstream Rust deps don't build (3.14 today), skip the whole
+# module instead of failing test collection.
+pytest.importorskip("aiograpi")
+
+from insta_dl.backends.aiograpi_backend import AiograpiBackend  # noqa: E402
+from insta_dl.exceptions import AuthError  # noqa: E402
 
 
 def _user(pk=99, username="foo"):
