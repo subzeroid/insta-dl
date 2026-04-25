@@ -2,6 +2,13 @@
 
 All notable changes to insta-dl. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning follows [SemVer](https://semver.org/spec/v2.0.0.html). Entries from 0.1.1 onward are assembled from Conventional Commits by [release-please](https://github.com/googleapis/release-please).
 
+## [0.1.3](https://github.com/subzeroid/insta-dl/compare/v0.1.2...v0.1.3) (2026-04-25)
+
+
+### Added
+
+* per-target run summary and --quiet/-q flag ([91d8b1d](https://github.com/subzeroid/insta-dl/commit/91d8b1d87f81ed5eb9064cae0b78fcddf8a67549))
+
 ## [0.1.2](https://github.com/subzeroid/insta-dl/compare/v0.1.1...v0.1.2) (2026-04-25)
 
 
