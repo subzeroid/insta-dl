@@ -36,11 +36,15 @@ insta_dl/
   models.py           # DTOs (Profile, Post, StoryItem, Highlight, Comment)
   filestore.py        # safe_component, post_filename, mtime
   latest_stamps.py    # INI state for --fast-update
+  filter_expr.py      # AST-whitelist evaluator for --post-filter
+  retry.py            # httpx-aware retry/backoff (used by both backends)
+  cdn.py              # shared CDN streaming (host allowlist, .part, max_bytes)
   exceptions.py       # error hierarchy
   backends/
-    hiker.py              # HikerAPI adapter (httpx + AsyncClient)
+    hiker.py              # HikerAPI adapter (uses cdn.stream_to_file)
     _hiker_map.py         # raw dict → DTO mappers
-    aiograpi_backend.py   # aiograpi adapter (stub; in progress)
+    aiograpi_backend.py   # aiograpi adapter (uses cdn.stream_to_file)
+    _aiograpi_map.py      # pydantic-typed → DTO mappers
 tests/
   test_*.py           # pytest, asyncio mode = auto
 docs/
@@ -51,13 +55,7 @@ docs/
 
 1. Implement `insta_dl.backend.InstagramBackend` in `insta_dl/backends/<name>.py`. All methods are `async`; iterators are `AsyncIterator[...]`.
 2. Map raw responses to DTOs in `insta_dl/backends/_<name>_map.py`. Don't fabricate missing fields — raise `ValueError` so the caller can decide to skip.
-3. Implement `download_resource(url, dest)` with:
-   - host allowlist (`*.cdninstagram.com`, `*.fbcdn.net`)
-   - https-only scheme check
-   - manual redirect loop with limit
-   - `.part` file with `uuid.uuid4().hex` suffix → `os.replace` on success, `unlink` on failure
-   - byte budget against `_max_bytes`
-   See `HikerBackend.download_resource` for the reference.
+3. Implement `download_resource(url, dest)` by delegating to `insta_dl.cdn.stream_to_file(http_client, url, dest, max_bytes=..., show_progress=...)` — that helper handles the host allowlist, https-only check, manual redirect loop, `.part` atomic rename, and byte budget. Wrap the call in `retry_call` from `insta_dl.retry` for transient-error recovery. See `HikerBackend.download_resource` or `AiograpiBackend.download_resource` for the two-line reference.
 4. Register in `insta_dl/backends/__init__.py:make_backend`.
 5. Add tests in `tests/test_<name>_backend.py` using `httpx.MockTransport` for the CDN and a fake client for the upstream API.
 

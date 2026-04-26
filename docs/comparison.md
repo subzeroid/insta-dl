@@ -15,7 +15,7 @@ A practical comparison with the tools people usually find first when they search
 | Hashtags | ✅ | ✅ |
 | Stories, highlights | ✅ | ✅ |
 | Comments | ✅ JSON sidecar | ✅ JSON sidecar |
-| Feed / saved / DMs | ❌ (planned, blocked on aiograpi) | ✅ |
+| Feed / saved / DMs | ❌ (possible via aiograpi backend, not yet wired into the CLI) | ✅ |
 | Tagged / IGTV / location | ❌ | ✅ |
 | `--fast-update` for incremental archives | ✅ | ✅ (inspired by) |
 | GraphQL fallback | ❌ | ✅ |

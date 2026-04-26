@@ -19,9 +19,14 @@ This page is for contributors and people embedding insta-dl as a library. End-us
 │ InstagramBackend ABC    async iterators,            │  port
 │  (backend.py)           download_resource           │
 ├─────────────────────────────────────────────────────┤
-│ HikerBackend            httpx CDN +                 │  adapters
-│  (backends/hiker.py)    hikerapi.AsyncClient        │
+│ HikerBackend            hikerapi.AsyncClient        │  adapters
+│  (backends/hiker.py)                                │
 │ AiograpiBackend         aiograpi.Client             │
+│  (backends/aiograpi…)                               │
+├─────────────────────────────────────────────────────┤
+│ cdn.stream_to_file      httpx + host allowlist      │  shared CDN
+│  (cdn.py)               + .part atomic + max_bytes  │
+│ retry.retry_call        exponential backoff         │  shared retry
 └─────────────────────────────────────────────────────┘
 ```
 
@@ -39,9 +44,13 @@ The arrow points down: each layer depends only on what's below it. Backends neve
 | `insta_dl/filestore.py` | `safe_component()`, `post_filename()`, `apply_mtime()`, `ext_from_url()`. The hardening surface for path safety. |
 | `insta_dl/latest_stamps.py` | `LatestStamps` — INI persistence for `--fast-update` cutoffs. |
 | `insta_dl/backends/__init__.py` | `make_backend(name, **kw)` factory. |
-| `insta_dl/backends/hiker.py` | `HikerBackend` — talks to `https://api.hikerapi.com` via the hikerapi SDK; downloads media via `httpx.AsyncClient` with explicit redirect handling, host/scheme allowlist, byte budget, UUID-suffixed `.part` files. |
+| `insta_dl/backends/hiker.py` | `HikerBackend` — talks to `https://api.hikerapi.com` via the hikerapi SDK; downloads media via `cdn.stream_to_file`. |
 | `insta_dl/backends/_hiker_map.py` | Pure functions mapping HikerAPI dicts to DTOs. No I/O. |
-| `insta_dl/backends/aiograpi_backend.py` | Stub. Will mirror `HikerBackend` against `aiograpi.Client`. |
+| `insta_dl/backends/aiograpi_backend.py` | `AiograpiBackend` — uses an Instagram session (login or saved file) via `aiograpi.Client`; downloads media via `cdn.stream_to_file`. Auth deferred via `_ensure_auth()` so construction never hits the network. |
+| `insta_dl/backends/_aiograpi_map.py` | Pure functions mapping pydantic-typed aiograpi models to DTOs. No I/O. |
+| `insta_dl/cdn.py` | Backend-agnostic CDN streaming: host allowlist (`*.cdninstagram.com`, `*.fbcdn.net`), https-only, manual redirect cap, content-length sanity, byte budget, UUID-suffixed `.part` files, tqdm progress. Both backends use this. |
+| `insta_dl/retry.py` | `retry_call` / `with_retry` — httpx-aware exponential backoff with jitter, honors `Retry-After`. |
+| `insta_dl/filter_expr.py` | `compile_filter()` — AST-whitelist evaluator for `--post-filter` predicates. Disallows attribute access, calls, lambdas; runs with `__builtins__` stripped. |
 
 ## Key design decisions
 
@@ -55,7 +64,7 @@ The arrow points down: each layer depends only on what's below it. Backends neve
 
 **One `httpx.AsyncClient` per backend instance, reused.** Created lazily on first download. Closed in `close()`.
 
-**Manual redirect loop in `download_resource`.** httpx's `follow_redirects=True` would let an attacker (via a poisoned upstream response) redirect from a CDN host to `localhost`. We set `follow_redirects=False`, then loop ourselves, validating host + scheme on every hop.
+**Manual redirect loop in `cdn.stream_to_file`.** httpx's `follow_redirects=True` would let an attacker (via a poisoned upstream response) redirect from a CDN host to `localhost`. We set `follow_redirects=False`, then loop ourselves, validating host + scheme on every hop. Both backends share this code path — the security guard is in one place.
 
 **`.part` files use `uuid.uuid4().hex`.** Same-process same-instance same-dest concurrent downloads must not collide — `pid + id(self)` is not enough. UUID4 is.
 
@@ -65,7 +74,7 @@ The arrow points down: each layer depends only on what's below it. Backends neve
 
 **Pagination hidden inside iterators.** Callers do `async for post in backend.iter_user_posts(pk)` and don't know whether it's cursor-based, page-id, or section-extraction. The contract: `iter_user_posts` is newest-first; `Downloader.fast_update` relies on this.
 
-**Retry/backoff lives at the adapter layer.** `insta_dl/retry.py` exposes `retry_call` (ad-hoc) and `with_retry` (decorator). `HikerBackend` wraps every `_client` API call and `download_resource` with `retry_call`; `Downloader` stays oblivious. Retries on `httpx.TransportError` and HTTP 408/425/429/5xx, with exponential backoff + jitter and `Retry-After` honoring.
+**Retry/backoff lives at the adapter layer.** `insta_dl/retry.py` exposes `retry_call` (ad-hoc) and `with_retry` (decorator). Both `HikerBackend` and `AiograpiBackend` wrap every external call (metadata + downloads) with `retry_call`; `Downloader` stays oblivious. Retries on `httpx.TransportError` and HTTP 408/425/429/5xx, with exponential backoff + jitter and `Retry-After` honoring.
 
 ## Testing strategy
 
@@ -74,7 +83,7 @@ The arrow points down: each layer depends only on what's below it. Backends neve
 - HTTP path → tested with `httpx.MockTransport`. Covers SSRF rejection, scheme-downgrade rejection, redirect-loop limit, `Content-Length` overflow, streaming overflow, missing `Location`, `.part` cleanup, concurrent same-dest writes.
 - `Downloader` integration → `FakeBackend` driving the full facade, checking file layout, mtime, sidecar JSON, comments streaming, fast-update cutoff, untrusted-username sanitization.
 
-251 tests, 96% coverage. The remaining ~4% missed: `__main__.py` trampoline (4 lines), abstract `...` placeholders, two `if __name__ == "__main__"` lines, a few defensive-error branches in the streaming download path.
+278 tests, 96% coverage. The remaining ~4% missed: `__main__.py` trampoline (4 lines), abstract `...` placeholders, two `if __name__ == "__main__"` lines, a few defensive-error branches in the streaming download path.
 
 ## What changes when the schema drifts
 
