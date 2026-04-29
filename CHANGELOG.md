@@ -2,6 +2,14 @@
 
 All notable changes to insta-dl. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning follows [SemVer](https://semver.org/spec/v2.0.0.html). Entries from 0.1.1 onward are assembled from Conventional Commits by [release-please](https://github.com/googleapis/release-please).
 
+## [0.1.8](https://github.com/subzeroid/insta-dl/compare/v0.1.7...v0.1.8) (2026-04-29)
+
+
+### Documentation
+
+* add comparison vs instaloader / gallery-dl ([e5443db](https://github.com/subzeroid/insta-dl/commit/e5443db40ef98fec8cee3be64cde8da7f74ca527))
+* post-aiograpi sync — refresh layout, file table, and architecture diagram ([6a73ba8](https://github.com/subzeroid/insta-dl/commit/6a73ba83434d7439f2073776ef7fbd52ef2a2dbb))
+
 ## [0.1.7](https://github.com/subzeroid/insta-dl/compare/v0.1.6...v0.1.7) (2026-04-25)
 
 
