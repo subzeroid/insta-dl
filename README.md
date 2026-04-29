@@ -46,6 +46,29 @@ insta-dl [--backend hiker|aiograpi]
 
 📖 **[Full documentation](https://subzeroid.github.io/insta-dl/)** — installation, CLI reference, backends comparison, Python API, troubleshooting.
 
+## How insta-dl compares to other Instagram downloaders
+
+| | insta-dl | [instaloader](https://github.com/instaloader/instaloader) | [gallery-dl](https://github.com/mikf/gallery-dl) |
+|---|---|---|---|
+| Backend | [HikerAPI](https://hikerapi.com/p/18j4ib4j) cloud (default), aiograpi optional | Logged-in Instagram session | Logged-in Instagram session |
+| Account ban risk | **None** with HikerAPI backend | High — your account scrapes | High — your account scrapes |
+| Login required | No (HikerAPI token only) | Yes | Yes |
+| Stories / highlights | ✅ | ✅ (login required) | ✅ (login required) |
+| Hashtags | ✅ | ✅ (rate-limited) | ✅ (rate-limited) |
+| Comments | ✅ | ✅ | ✅ |
+| Async / concurrent | ✅ native asyncio | Sync | Sync |
+| `taken_at` mtime | ✅ | ✅ | ⚠️ partial |
+| JSON sidecar | ✅ | ✅ | ✅ |
+| Multi-site (TikTok, Twitter, …) | Instagram-only | Instagram-only | ✅ 300+ sites |
+
+**When to pick insta-dl** — you want an Instagram archive without losing your account. The default HikerAPI backend uses no Instagram session, so there's nothing for Instagram to flag, ban, or 2FA-challenge. instaloader and gallery-dl both drive scraping through your own logged-in cookies, which works until Instagram raises the rate-limit floor again.
+
+**When to pick instaloader** — you don't want any external service in the loop and you have a throwaway Instagram account you don't mind burning. Battle-tested, huge user base, more granular `--filter` expression language.
+
+**When to pick gallery-dl** — you want one tool for many platforms (Twitter, TikTok, DeviantArt, etc.) and Instagram is just one of them. Less Instagram-specialised but covers a much wider catalogue.
+
+Related projects: [instaloot](https://github.com/yoryan/instaloot) (Python, less maintained), [instagram-php-scraper](https://github.com/postaddictme/instagram-php-scraper) (PHP, login-based), [aiograpi](https://github.com/subzeroid/aiograpi) (the async Instagram private API library that powers the optional `[aiograpi]` backend here).
+
 ## How to download an Instagram profile
 
 ```bash
