@@ -30,7 +30,7 @@ jobs:
       - run: pip install -e '.[dev]'
         if: matrix.python-version == '3.14'
       - run: pytest --cov=insta_dl --cov-report=term-missing --cov-report=xml --cov-fail-under=93
-      - uses: codecov/codecov-action@v6
+      - uses: codecov/codecov-action@v7
         if: matrix.python-version == '3.12'
         with:
           files: ./coverage.xml
